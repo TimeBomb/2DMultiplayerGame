@@ -1,0 +1,34 @@
+{
+	"name": "2dgame",
+	"dependencies": {
+		"@types/koa": "^2.11.3",
+		"@types/uglify-js": "^3.0.5",
+		"browserify": "^16.5.1",
+		"esmify": "^2.1.1",
+		"koa": "^2.11.0",
+		"koa-static": "^5.0.0",
+		"minify-stream": "^2.0.0",
+		"phaser": "^3.22.0",
+		"string-to-stream": "^3.0.1",
+		"tsify": "^4.0.1",
+		"uWebSockets.js": "github:uNetworking/uWebSockets.js#v17.3.0"
+	},
+	"scripts": {
+		"build": "ts-node --project ./packages/client/tsconfig.json ./packages/client/build.ts",
+		"build-dev": "ts-node --project ./packages/client/tsconfig.json ./packages/client/build.ts --dev",
+		"backend": "ts-node ./packages/backend/server.ts",
+		"web": "ts-node --project ./packages/web/tsconfig.json ./packages/web/server.ts"
+	},
+	"devDependencies": {
+		"browser-pack-flat": "^3.4.2",
+		"commander": "^5.0.0",
+		"common-shakeify": "^0.6.2",
+		"envify": "^4.1.0",
+		"tinyify": "^2.5.2",
+		"ts-node": "^8.8.2",
+		"typescript": "^3.8.3",
+		"uglify-js": "^3.8.1",
+		"uglifyify": "^5.0.2",
+		"unassertify": "^2.1.1"
+	}
+}

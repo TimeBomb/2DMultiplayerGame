@@ -1,0 +1,8 @@
+- Split client up in client folder, ie appropriate entities/etc
+- Two person entities should exist, one controlled by player, other controlled by simple AI that just shoots
+- Split client up into client engine. Client should send input events to engine, engine should handle everything including phaser logic. Any render logic that can be left outside the engine should be, but that may be minimal and that's ok for now
+- Create basic webhook server in backend, connect to client so there's a client & server tick rate event
+- Send input events from client to server
+- Duplicate client engine as server engine, send received input events from server to server engine
+- Verify player events as valid on server engine. Need tick event that says if it's valid or not, likely sends along appropriate info so client can visually update itself if not synced with server
+- Enemy person entity should be created and controlled entirely by server, and passed to client
