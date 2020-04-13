@@ -37,11 +37,10 @@ export default class Game {
 		const config = {
 			type: Phaser.CANVAS,
 			parent: 'game',
-			width: 1920,
-			height: 1080,
+			width: 3200,
+			height: 3200,
 			scale: {
 				mode: Phaser.Scale.RESIZE,
-				autoCenter: Phaser.Scale.CENTER_BOTH,
 			},
 			scene: {
 				preload: rebind(this.preload),
@@ -68,12 +67,18 @@ export default class Game {
 		}); // Made by tokkatrain: https://tokkatrain.itch.io/top-down-basic-set
 		scene.load.image('bullet', 'assets/sprites/bullets/bullet6.png');
 		scene.load.image('target', 'assets/demoscene/ball.png');
-		scene.load.image('background', 'assets/skies/underwater1.png');
+		scene.load.tilemapTiledJSON('map', 'assets/tilemaps/map.json');
+		scene.load.image('tiles', 'assets/tilemaps/blowharder.png');
 	}
 
 	create(scene: Phaser.Scene) {
+		scene.cameras.main.setBackgroundColor('rgb(0,200,50)');
 		// Add background player, enemy, healthpoint sprites
-		this.background = scene.add.image(800, 600, 'background');
+		const map = scene.make.tilemap({
+			key: 'map',
+		});
+		const tileset = map.addTilesetImage('blowharder', 'tiles');
+		map.createStaticLayer('World', tileset, 0, 0);
 
 		this.player = new Person(scene, 800, 600);
 		this.enemy = new Person(scene, 500, 400);
@@ -85,7 +90,7 @@ export default class Game {
 		this.hp3 = scene.add.image(-250, -250, 'target').setScrollFactor(0.5, 0.5);
 
 		// Set image/sprite properties
-		this.background.setOrigin(0.5, 0.5).setDisplaySize(1600, 1200);
+		// this.background.setOrigin(0, 0).setDisplaySize(4000, 3000);
 		this.hp1.setOrigin(0.5, 0.5).setDisplaySize(50, 50);
 		this.hp2.setOrigin(0.5, 0.5).setDisplaySize(50, 50);
 		this.hp3.setOrigin(0.5, 0.5).setDisplaySize(50, 50);
@@ -144,73 +149,48 @@ export default class Game {
 			this.cursor.x = pointer.worldX;
 			this.cursor.y = pointer.worldY;
 		});
+
+		window.addEventListener('blur', () => {
+			this.player.stopMovement();
+		});
 	}
 
-	// function enemyHitCallback(enemyHit, bulletHit) {
-	// 	// Reduce health of enemy
-	// 	if (bulletHit.active === true && enemyHit.active === true) {
-	// 		enemyHit.health = enemyHit.health - 1;
-
-	// 		// Kill enemy if health <= 0
-	// 		if (enemyHit.health <= 0) {
-	// 			enemyHit.setActive(false).setVisible(false);
-	// 		}
-
-	// 		// Destroy bullet
-	// 		bulletHit.setActive(false).setVisible(false);
-	// 	}
-	// }
-
-	// function playerHitCallback(playerHit, bulletHit) {
-	// 	// Reduce health of player
-	// 	if (bulletHit.active === true && playerHit.active === true) {
-	// 		playerHit.health = playerHit.health - 1;
-	// 		console.log('Player hp: ', playerHit.health);
-
-	// 		// Kill hp sprites and kill player if health <= 0
-	// 		if (playerHit.health == 2) {
-	// 			hp3.destroy();
-	// 		} else if (playerHit.health == 1) {
-	// 			hp2.destroy();
-	// 		} else {
-	// 			hp1.destroy();
-	// 			// Game over state should execute here
-	// 		}
-
-	// 		// Destroy bullet
-	// 		bulletHit.setActive(false).setVisible(false);
-	// 	}
-	// }
-
-	// function enemyFire(enemy, player, time, gameObject) {
-	// 	if (enemy.active === false) {
-	// 		return;
-	// 	}
-
-	// 	if (time - enemy.lastFired > 1000) {
-	// 		enemy.lastFired = time;
-
-	// 		// Get bullet from bullets group
-	// 		const bullet = enemyBullets.get().setActive(true).setVisible(true);
-
-	// 		if (bullet) {
-	// 			bullet.fire(enemy, player);
-	// 			// TODO: Add collider to bullet
-	// 		}
-	// 	}
-	// }
-
-	update(scene: Phaser.Scene, time, delta) {
+	update(scene: Phaser.Scene) {
 		// Rotates player to face towards cursor
 		this.player.tick(this.game, this.cursor);
-		// Rotates enemy to face towards player
-		this.enemy.updateRotation(this.player);
-		// Make enemy fire
-		if (Math.random() > 0.98) {
-			this.enemy.attack(this.player);
-		}
+
+		this.enemyAI();
 
 		this.checkCollision(scene);
+	}
+
+	enemyAI() {
+		// Make enemy fire and move
+		const seed = Math.random();
+		if (seed > 0.9) {
+			this.enemy.attack(this.player);
+		}
+		const randomMovement = (direction: Directions) => {
+			this.enemy.toggleMovementDirection(direction, true);
+			window.setTimeout(() => {
+				if (this.enemy.movementDirections.has(direction)) {
+					this.enemy.toggleMovementDirection(direction, false);
+				}
+			}, 450);
+		};
+		if (seed > 0.98) {
+			randomMovement(Directions.Backward);
+		} else if (seed > 0.97) {
+			randomMovement(Directions.Forward);
+		} else if (seed > 0.96) {
+			randomMovement(Directions.Left);
+		} else if (seed > 0.95) {
+			randomMovement(Directions.Right);
+		}
+		this.enemy.tick(this.game);
+
+		// Rotates enemy to face towards player
+		this.enemy.updateRotation(this.player);
 	}
 
 	checkCollision(scene: Phaser.Scene) {

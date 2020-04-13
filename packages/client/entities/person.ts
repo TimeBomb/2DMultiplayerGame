@@ -11,9 +11,12 @@ export default class Person extends Phaser.GameObjects.Sprite {
 	angle;
 	scene;
 	isHittable = true;
+	respawnPosition: { x: number; y: number };
+	isDead = false;
 
 	constructor(scene: Phaser.Scene, x, y) {
 		super(scene, x, y, 'player_handgun', undefined);
+		this.respawnPosition = { x, y };
 		this.setOrigin(0.5, 0.5).setDisplaySize(132, 120);
 		this.bullets = scene.add.group({ classType: Bullet, runChildUpdate: true });
 		scene.add.existing(this);
@@ -21,6 +24,9 @@ export default class Person extends Phaser.GameObjects.Sprite {
 	}
 
 	toggleMovementDirection(direction: Directions, toggleOn: boolean) {
+		console.log('toggled move dirs', direction, toggleOn);
+		if (this.isDead) return;
+
 		if (toggleOn) {
 			this.movementDirections.add(direction);
 		} else {
@@ -28,12 +34,17 @@ export default class Person extends Phaser.GameObjects.Sprite {
 		}
 	}
 
+	stopMovement() {
+		this.movementDirections.clear();
+	}
+
 	updateRotation(cursor: { x: number; y: number }) {
 		this.angle = Phaser.Math.Angle.BetweenPoints(this, cursor);
 		this.setRotation(this.angle);
 	}
 
-	tick(game: Phaser.Game, cursor) {
+	// TODO: Sometimes left/right movement appears blocked after moving for some time, why?
+	tick(game: Phaser.Game, cursor?) {
 		const tickRate = 1000 / game.loop.delta; // Updates per second
 
 		if (this.movementDirections.size > 0) {
@@ -46,13 +57,22 @@ export default class Person extends Phaser.GameObjects.Sprite {
 			if (this.movementDirections.has(Directions.Left)) xDiff -= movementAmount;
 			if (this.movementDirections.has(Directions.Right)) xDiff += movementAmount;
 
-			this.setPosition(this.x + xDiff, this.y + yDiff);
-			cursor.setPosition(cursor.x + xDiff, cursor.y + yDiff);
+			// console.log(this.movementDirections, xDiff, yDiff);
+			this.setPosition(
+				Phaser.Math.Clamp(this.x + xDiff, 0, 1920),
+				Phaser.Math.Clamp(this.y + yDiff, 0, 1080),
+			);
+
+			if (cursor) {
+				cursor.setPosition(cursor.x + xDiff, cursor.y + yDiff);
+				this.updateRotation(cursor);
+			}
 		}
-		this.updateRotation(cursor);
 	}
 
 	attack(cursor) {
+		if (this.isDead) return;
+
 		var bullet = this.bullets.get().setActive(true).setVisible(true);
 		bullet.owner = this.name;
 
@@ -61,10 +81,29 @@ export default class Person extends Phaser.GameObjects.Sprite {
 		}
 	}
 
+	onDead() {
+		// TODO: Respawn from server
+		this.isDead = true;
+		this.stopMovement();
+		this.setActive(false).setVisible(false);
+		window.setTimeout(this.respawn.bind(this), 3000);
+	}
+
+	respawn() {
+		this.health = 100;
+		this.isDead = false;
+		this.setPosition(this.respawnPosition.x, this.respawnPosition.y)
+			.setVisible(true)
+			.setActive(true);
+	}
+
 	onCollide(obj: CollideableGameObject) {
 		if (obj.damage && obj.owner !== this.name) {
 			this.health -= obj.damage;
-			console.log(`was hit, ${this.name} health is now ${this.health}`);
+			if (this.health <= 0) {
+				this.health = 0;
+				this.onDead();
+			}
 		}
 	}
 }
