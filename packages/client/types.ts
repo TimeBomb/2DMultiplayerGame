@@ -6,3 +6,5 @@ export type CollideableGameObject = ValidGameObject & {
 	isHittable?: boolean;
 	owner?: string;
 };
+export type Rectangle = { left: number; top: number; right: number; bottom: number };
+export type GameObjectBounds = Rectangle & { position: { x: number; y: number } };
