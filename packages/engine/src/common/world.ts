@@ -1,4 +1,10 @@
-import { CollideableGameObject, Rectangle, GameObject, AggroGameObject } from './types/objects';
+import {
+	CollideableGameObject,
+	Rectangle,
+	GameObject,
+	AggroGameObject,
+	Faction,
+} from './types/objects';
 import { StaticTilemapLayer } from './types/world';
 import { RectangleToRectangle, CircleToRectangle } from '../helpers/math';
 import EngineState from '../EngineState';
@@ -37,14 +43,6 @@ export default class World {
 
 	addGameObject(obj: GameObject) {
 		this.gameObjects[obj.name] = obj;
-		console.log(
-			'world addgameobject dispatching',
-			obj,
-			obj.type,
-			obj.entityType,
-			obj.x,
-			obj.sprite,
-		);
 		EngineState.eventBus.dispatch(
 			new GameEvent(EventType.GAME_OBJECT_ADDED, {
 				name: obj.name,
@@ -59,7 +57,7 @@ export default class World {
 	// TODO: Name these two collision methods better
 	// Check if game objects are colliding with other game objects
 	checkCollisionForObjects() {
-		const validObjectTypes = ['Image', 'Sprite'];
+		const validObjectTypes = ['Image', 'Sprite', 'EngineOnly'];
 		const checkedList: { [key: string]: string[] } = {};
 
 		// Get all collisions with aggro objects, to send back to the AI persons
@@ -71,6 +69,12 @@ export default class World {
 		const gameObjKeys = Object.keys(this.gameObjects);
 		for (let i = 0; i < gameObjKeys.length; i++) {
 			const objA = this.gameObjects[gameObjKeys[i]];
+			if (!objA) continue;
+			if (objA?.deleted) {
+				delete this.gameObjects[objA.name];
+				delete this.deadGameObjects[objA.name];
+				continue;
+			}
 			if (!objA.active || !objA.name || !validObjectTypes.includes(objA.type)) {
 				continue;
 			}
@@ -78,6 +82,12 @@ export default class World {
 
 			for (let j = 0; j < gameObjKeys.length; j++) {
 				const objB = this.gameObjects[gameObjKeys[j]];
+				if (!objB) continue;
+				if (objB.deleted) {
+					delete this.gameObjects[objB.name];
+					delete this.deadGameObjects[objB.name];
+					continue;
+				}
 				// If objects don't have names, or are same,
 				// or objects have already been checked together,
 				// or objects are invalid types, then return
@@ -93,30 +103,50 @@ export default class World {
 
 				const validObjB = objB as CollideableGameObject;
 				// If neither objects can be hit, don't check collision
-				if (!validObjA.isHittable && !validObjB.isHittable) return;
+				if (!validObjA.isHittable && !validObjB.isHittable) continue;
 
 				// Don't compare two aggro objects directly
-				if (validObjA.isAggroObject && validObjB.isAggroObject) return;
+				if (validObjA.isAggroObject && validObjB.isAggroObject) continue;
 
 				// Don't compare two objects that don't have collision events
-				if (!validObjA.onCollide && !validObjB.onCollide) return;
+				if (!validObjA.onCollide && !validObjB.onCollide) continue;
 
 				// Comparisons are different for aggro objects
 				if (validObjA.isAggroObject || validObjB.isAggroObject) {
 					const aggroRadius = validObjA.isAggroObject ? validObjA : validObjB;
 					const obj = validObjA.isAggroObject ? validObjB : validObjA;
 
-					const isCollided = CircleToRectangle(aggroRadius, obj.getBounds());
-					if (isCollided) {
-						aggroCollisions[aggroRadius.owner.name] =
-							aggroCollisions[aggroRadius.owner.name] || [];
-						aggroCollisions[aggroRadius.owner.name].push(obj);
+					const objBounds = obj.getBounds();
+					if (obj.hitboxWidth) {
+						objBounds.width = obj.hitboxWidth;
+						objBounds.height = obj.hitboxHeight;
+					}
 
+					const isCollided = CircleToRectangle(aggroRadius, obj);
+
+					// Always define this, so we can make sure we reset the aggro target if everything leaves the enemy's aggro radius
+					aggroCollisions[aggroRadius.owner.name] =
+						aggroCollisions[aggroRadius.owner.name] || [];
+
+					// Enemies can't select themselves as a target
+					if (aggroRadius.owner.name === obj.name) continue;
+
+					if (isCollided && !aggroCollisions[aggroRadius.owner.name]?.includes(obj)) {
+						aggroCollisions[aggroRadius.owner.name].push(obj);
 						aggroCollisionsObjects[aggroRadius.owner.name] = aggroRadius;
 					}
 				} else {
 					const boundsA = validObjA.getBounds();
 					const boundsB = validObjB.getBounds();
+
+					if (validObjA.hitboxWidth) {
+						boundsA.width = validObjA.hitboxWidth;
+						boundsA.height = validObjA.hitboxHeight;
+					}
+					if (validObjB.hitboxWidth) {
+						boundsB.width = validObjB.hitboxWidth;
+						boundsB.height = validObjB.hitboxHeight;
+					}
 
 					const isCollided = RectangleToRectangle(boundsA, boundsB);
 					if (isCollided) {
@@ -145,7 +175,6 @@ export default class World {
 	// Returns true if collided, false if not
 	checkWorldCollisionByObject(objBounds: Rectangle): Boolean {
 		// Get the individual tiles next to object
-		// TODO: Figure out why `- 1` works - maybe because getTileAt is off by one, not left/right/top/bottom tile?
 		let leftTile = Math.round(objBounds.left / this.collisionLayer.tilemap.tileWidth) - 1;
 		let rightTile = Math.round(objBounds.right / this.collisionLayer.tilemap.tileWidth) - 1;
 		let topTile = Math.round(objBounds.top / this.collisionLayer.tilemap.tileHeight) - 1;

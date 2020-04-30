@@ -4,6 +4,7 @@ import { Directions } from '../helpers/constants';
 import GameControls from './GameControls';
 import ClientState from './ClientState';
 import Shooter from '../common/entities/player/shooter';
+import Enemy from '../common/entities/ai/enemy';
 
 export default class PhaserGame {
 	gameInstance: Phaser.Game;
@@ -57,10 +58,7 @@ export default class PhaserGame {
 	}
 
 	create(scene: Phaser.Scene) {
-		ClientState.personRenderer.initialize(scene);
-		ClientState.player.initialize();
-
-		// Initialize tilemaps
+		// Initialize tilemaps before objects
 		const map = scene.make.tilemap({
 			key: 'map',
 		});
@@ -72,8 +70,13 @@ export default class PhaserGame {
 			.setCollisionByExclusion([0, -1]);
 		EngineState.world.setTilemapLayers({ worldLayer, collisionLayer });
 
-		// TODO ASAP: Fix player not being rendered
-		// TODO ASAP: Collision seems off - need to fix it
+		ClientState.personRenderer.initialize(scene);
+		ClientState.projectileRenderer.initialize(scene);
+		ClientState.player.initialize();
+
+		// TODO: REMOVE THIS, only for testing
+		EngineState.world.addGameObject(new Enemy({ coordinates: { x: 1100, y: 1100 } }));
+
 		// Initialize camera
 		scene.cameras.main.zoom = 0.6;
 		console.log(ClientState.player.phaserInstance);
@@ -141,6 +144,6 @@ export default class PhaserGame {
 	}
 
 	update(scene: Phaser.Scene) {
-		EngineState.timeStep.tick(scene.game.loop.delta);
+		EngineState.timeStep.tick(scene.game.loop.rawDelta);
 	}
 }

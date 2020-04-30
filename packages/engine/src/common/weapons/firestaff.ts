@@ -10,7 +10,10 @@ export default class FireStaff extends Weapon {
 	damage: number = 10;
 	lifetimeMs: number = 1000;
 
+	// TODO: This logic should ideally be mostly in Projectile class
 	attack({ attackerCoords, targetCoords, attackerRotation, attackerSize }: AttackProps) {
+		if (!targetCoords) return;
+
 		const projectile = new Fireball({
 			ownerName: this.ownerName,
 			ownerFaction: this.ownerFaction,

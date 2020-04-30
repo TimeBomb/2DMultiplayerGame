@@ -13,16 +13,13 @@ export default abstract class AI extends Person {
 	currentTarget: WeightedObject;
 	aggroObj: AggroObject;
 
-	abstract update();
-
 	abstract getBehaviorRules(target: CollideableGameObject): BehaviorRule[];
 
 	abstract updateTarget(weightedTargets: WeightedObject[]);
 
 	setPosition(x, y) {
-		// Call setPosition on the parent class normally
-		AI.prototype.setPosition.bind(this)(x, y);
-
+		this.x = x;
+		this.y = y;
 		// Call setPosition on the aggroObj
 		this.aggroObj.setPosition(x, y);
 	}

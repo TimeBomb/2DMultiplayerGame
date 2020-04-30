@@ -4,6 +4,7 @@ import { uuid } from '../lib/uuid';
 import { CollideableGameObject, Rectangle } from '../types';
 import World from '../World';
 
+// TODO: Remove weapons and tie projectiles directly to player
 export default class Person extends Phaser.GameObjects.Sprite {
 	movementDirections = new Set();
 	movementSpeed = 55;
@@ -137,6 +138,7 @@ export default class Person extends Phaser.GameObjects.Sprite {
 	}
 
 	onCollide(obj: CollideableGameObject) {
+		console.log('this collided with obj', this, obj);
 		if (obj.damage && obj.owner !== this.name) {
 			this.health -= obj.damage;
 			if (this.health <= 0) {
@@ -161,8 +163,6 @@ export default class Person extends Phaser.GameObjects.Sprite {
 			top: y - spritePaddingY,
 			left: x - spritePaddingX,
 		};
-
-		// console.log(x, y, objRect);
 
 		const hasCollided = this.world.checkWorldCollision(objRect);
 		return hasCollided;

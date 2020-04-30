@@ -4,7 +4,6 @@ export default class EventBus {
 	listeners = {};
 
 	listen(eventType: EventType, callback: (payload?: any) => void) {
-		console.log('listening on eventtype in eventbus', eventType);
 		this.listeners[eventType] = this.listeners[eventType] || [];
 		this.listeners[eventType].push(callback);
 	}

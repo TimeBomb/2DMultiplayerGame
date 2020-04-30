@@ -3,11 +3,13 @@ import { WeightedObject } from '../../aibehavior/BehaviorWeights';
 export enum EntityType {
 	PERSON = 1,
 	PROJECTILE,
+	OTHER,
 }
 
 export interface GameObject {
 	type: string;
 	active: boolean;
+	deleted?: boolean;
 	name?: string;
 	x: number;
 	y: number;
@@ -25,14 +27,18 @@ export interface AIGameObject extends GameObject {
 }
 
 export type Bounds = {
-	left: number;
-	top: number;
+	x: number;
+	y: number;
+	width: number;
+	height: number;
 	right: number;
 	bottom: number;
 };
 
 export interface CollideableGameObject extends GameObject {
 	onCollide?: (ValidGameObject: GameObject) => void;
+	hitboxWidth?: number;
+	hitboxHeight?: number;
 	ownerName?: string;
 	damage?: number;
 	health?: number;

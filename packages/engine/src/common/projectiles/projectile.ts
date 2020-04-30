@@ -3,6 +3,7 @@ import EngineState from '../../EngineState';
 import { CollideableGameObject, WeaponModifiers, EntityType, Faction } from '../types/objects';
 import { GameEvent, EventType } from '../types/events';
 
+// TODO: Consolidate logic for removing projectile so it's not repetitive
 export default abstract class Projectile {
 	x: number = 0;
 	y: number = 0;
@@ -22,6 +23,7 @@ export default abstract class Projectile {
 	modifiers: WeaponModifiers;
 	entityType: EntityType = EntityType.PROJECTILE;
 	type: string = 'Image';
+	deleted: boolean = false;
 	abstract sprite: string;
 
 	constructor({
@@ -50,8 +52,21 @@ export default abstract class Projectile {
 		this.x += this.xSpeed * EngineState.timeStep.frameTimeMS;
 		this.y += this.ySpeed * EngineState.timeStep.frameTimeMS;
 		this.born += EngineState.timeStep.frameTimeMS;
-		if (this.born > this.bulletLifetime) {
+
+		const objRect = {
+			bottom: this.y + this.height,
+			right: this.x + this.width,
+			top: this.y,
+			left: this.x,
+		};
+		const hasCollided = EngineState.world.checkWorldCollisionByObject(objRect);
+
+		if (hasCollided || this.born >= this.bulletLifetime) {
 			this.active = false;
+			this.deleted = true;
+			EngineState.eventBus.dispatch(
+				new GameEvent(EventType.REMOVE_PROJECTILE, { name: this.name }),
+			);
 		}
 
 		if (originalX !== this.x || originalY !== this.y) {
@@ -67,8 +82,12 @@ export default abstract class Projectile {
 
 	onCollide(obj: CollideableGameObject) {
 		// If can't collide with object, or object is owner of this bullet, don't trigger collision
-		if (!obj.isHittable || obj.name === this.ownerName || this.faction === this.faction) return;
+		if (!obj.isHittable || obj.name === this.ownerName || obj.faction === this.faction) return;
 		this.active = false;
+		this.deleted = true;
+		EngineState.eventBus.dispatch(
+			new GameEvent(EventType.REMOVE_PROJECTILE, { name: this.name }),
+		);
 	}
 
 	setPosition(x, y) {
@@ -78,8 +97,10 @@ export default abstract class Projectile {
 
 	getBounds() {
 		return {
-			top: this.x,
-			left: this.y,
+			x: this.x,
+			y: this.y,
+			width: this.width,
+			height: this.height,
 			bottom: this.y + this.height,
 			right: this.x + this.width,
 		};

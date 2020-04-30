@@ -6,7 +6,6 @@ import Weapon from '../../weapons/weapon';
 import EngineState from '../../../EngineState';
 import { GameEvent, EventType } from '../../types/events';
 import { Uuid } from '../../../helpers/misc';
-import { Engine } from 'matter';
 
 export type PersonProps = {
 	coordinates: Coords;
@@ -64,6 +63,7 @@ export default abstract class Person {
 
 		const originalX = this.x;
 		const originalY = this.y;
+		const originalRotation = this.rotation;
 		let xDiff = 0;
 		let yDiff = 0;
 
@@ -71,7 +71,7 @@ export default abstract class Person {
 			const movementAmount = Math.floor(
 				(this.movementSpeed * EngineState.timeStep.frameTimeMS) / 100,
 			);
-			const MOVEMENT_STEPS = 5;
+			const MOVEMENT_STEPS = 8;
 
 			const splitMovementAmount = Math.floor(movementAmount / MOVEMENT_STEPS);
 			for (let i = 0; i < splitMovementAmount + 1; i++) {
@@ -92,29 +92,39 @@ export default abstract class Person {
 			this.move(xDiff, yDiff);
 		}
 
+		// Call update after move, so we dont need to setPosition in update,
+		// and before rotate, so we can update targetCoords in update
 		this.update({ xDiff, yDiff });
-
-		console.log('original x, new x, xdiff, ydiff', originalX, this.x, xDiff, yDiff);
-		if (originalX !== this.x || originalY !== this.y) {
-			EngineState.eventBus.dispatch(
-				new GameEvent(EventType.UPDATE_PERSON, {
-					name: this.name,
-					x: this.x,
-					y: this.y,
-				}),
-			);
-		}
 
 		// We allow `update` to be run before rotating to target coords, since AI update target coords in the `update` method
 		if (this.targetCoords) {
 			this.rotateToCoords(this.targetCoords);
 		}
 
+		const updatePersonEventParams: any = {
+			name: this.name,
+		};
+		if (originalX !== this.x || originalY !== this.y) {
+			updatePersonEventParams.x = this.x;
+			updatePersonEventParams.y = this.y;
+		}
+		if (originalRotation !== this.rotation) {
+			updatePersonEventParams.rotation = this.rotation;
+		}
+		EngineState.eventBus.dispatch(
+			new GameEvent(EventType.UPDATE_PERSON, updatePersonEventParams),
+		);
+
 		return { xDiff, yDiff };
 	}
 
 	validateMove(movementAmount, initialXDiff: number, initialYDiff: number) {
 		if (movementAmount === 0) return;
+
+		// Movement speed is slowed while moving diagonally
+		if (this.movementDirections.size > 1) {
+			movementAmount = Math.round(movementAmount * 0.75);
+		}
 
 		let xDiff = initialXDiff;
 		let yDiff = initialYDiff;
@@ -188,6 +198,16 @@ export default abstract class Person {
 	}
 
 	onCollide(obj: CollideableGameObject) {
+		// if (this.faction !== Faction.PLAYER && this.type !== 'EngineObject')
+		// if (
+		// 	obj.type === 'Image' &&
+		// 	obj.faction === Faction.PLAYER &&
+		// 	this.faction !== Faction.PLAYER
+		// )
+		// 	console.log('player bullet collided', this);
+		// if (obj.type === 'Image' && obj.faction === Faction.ENEMY && this.faction !== Faction.ENEMY)
+		// 	console.log('enemy bullet collided', this);
+
 		if (obj.damage && obj.ownerName !== this.name && obj.faction !== this.faction) {
 			this.health -= obj.damage;
 			if (this.health <= 0) {
@@ -197,8 +217,9 @@ export default abstract class Person {
 		}
 	}
 
+	// This is passed the potential new position of the person, not the current position
 	hasWorldCollision(x, y) {
-		// Sprite needs to be at least size of tile width/height otherwise certain collision can bug
+		// Sprite needs to be at least size of tile width/height otherwise certain collisions w/ 3 collieable sides around sprite can bug
 		const objRect: Rectangle = {
 			bottom: y + this.height,
 			right: x + this.width,
@@ -215,8 +236,10 @@ export default abstract class Person {
 
 	getBounds() {
 		return {
-			top: this.x,
-			left: this.y,
+			x: this.x,
+			y: this.y,
+			width: this.width,
+			height: this.height,
 			bottom: this.y + this.height,
 			right: this.x + this.width,
 		};

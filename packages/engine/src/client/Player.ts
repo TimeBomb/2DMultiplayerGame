@@ -12,7 +12,6 @@ export default class Player {
 		EngineState.world.addGameObject(player);
 
 		this.phaserInstance = ClientState.personRenderer.persons[player.name];
-		console.log('player initd with phaser instance', this.phaserInstance);
 		this.engineInstance = player;
 	}
 }
