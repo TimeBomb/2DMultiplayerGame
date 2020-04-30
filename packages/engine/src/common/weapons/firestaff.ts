@@ -1,6 +1,10 @@
 import Weapon, { AttackProps } from './weapon';
 import Fireball from '../projectiles/fireball';
+import EngineState from '../../EngineState';
 
+// TODO: Make the `attack` method abstract to all projectiles
+// TODO: Try not to use gamewidth/height, or at least set it from some constants file
+// TODO: Adding fireball here sets sprite to undefned for some reason, maybe due to abstract class? shouldnt be....
 export default class FireStaff extends Weapon {
 	projectileSpeed: number = 1.5;
 	damage: number = 10;
@@ -11,6 +15,8 @@ export default class FireStaff extends Weapon {
 			ownerName: this.ownerName,
 			ownerFaction: this.ownerFaction,
 		});
+		EngineState.world.addGameObject(projectile);
+
 		let xMod = 0;
 		let yMod = 0;
 		const yDiff = attackerCoords.y - targetCoords.y;

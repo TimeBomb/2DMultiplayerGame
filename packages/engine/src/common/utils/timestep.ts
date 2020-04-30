@@ -37,16 +37,20 @@ export default class TimeStep {
 		// Step once
 		if (willStep) {
 			this.frameTickElapsed -= this.frameTimeMS;
+			EngineState.eventBus.dispatch(new GameEvent(EventType.TICK));
 		}
 		if (willLongStep) {
 			this.longTickElapsed -= this.longTickMS;
+			EngineState.eventBus.dispatch(new GameEvent(EventType.LONG_TICK));
 		}
 
 		// Per fixed timestep, step further if timestep is out of whack
+		// console.log(this.frameTickElapsed, this.frameTimeMS, 'tick elapse/ms,');
 		while (this.frameTickElapsed >= this.frameTimeMS) {
 			this.frameTickElapsed -= this.frameTimeMS;
 
 			EngineState.eventBus.dispatch(new GameEvent(EventType.TICK));
+			console.log('emitted tick', this.frameTickElapsed, this.frameTimeMS);
 		}
 		while (this.longTickElapsed >= this.longTickMS) {
 			this.longTickElapsed -= this.longTickMS;

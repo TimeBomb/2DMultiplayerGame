@@ -1,5 +1,10 @@
 import { WeightedObject } from '../../aibehavior/BehaviorWeights';
 
+export enum EntityType {
+	PERSON = 1,
+	PROJECTILE,
+}
+
 export interface GameObject {
 	type: string;
 	active: boolean;
@@ -7,6 +12,8 @@ export interface GameObject {
 	x: number;
 	y: number;
 	faction: Faction;
+	sprite: string;
+	entityType: EntityType;
 	getBounds: () => Bounds;
 	respawn?: () => void;
 }
@@ -26,6 +33,7 @@ export type Bounds = {
 
 export interface CollideableGameObject extends GameObject {
 	onCollide?: (ValidGameObject: GameObject) => void;
+	ownerName?: string;
 	damage?: number;
 	health?: number;
 	isHittable?: boolean;
@@ -45,8 +53,8 @@ export type AggroGameObject = CollideableGameObject & {
 export type Rectangle = { left: number; top: number; right: number; bottom: number };
 
 export enum WeaponModifier {
-	damage = 1,
-	speed,
+	DAMAGE = 1,
+	SPEED,
 }
 export type WeaponModifiers = {
 	[key in WeaponModifier]: number;

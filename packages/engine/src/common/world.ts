@@ -13,18 +13,47 @@ import { GameEvent, EventType } from './types/events';
 export default class World {
 	collisionLayer: StaticTilemapLayer;
 	worldLayer: StaticTilemapLayer;
-	gameObjects: { [key: string]: GameObject };
-	deadGameObjects: { name: string; respawnTime: number }[];
+	gameObjects: { [key: string]: GameObject } = {};
+	deadGameObjects: { name: string; respawnTime: number }[] = [];
 
-	constructor() {
-		EngineState.eventBus.listen(EventType.DEAD, ({ name, respawnTime }) => {
+	// We'll have to initialize this after construction since EngineState includes world
+	initialize() {
+		EngineState.eventBus.listen(EventType.PERSON_DEAD, ({ name, respawnTime }) => {
 			this.deadGameObjects.push({ name, respawnTime });
 		});
+		EngineState.eventBus.listen(EventType.TICK, this.checkCollisionForObjects.bind(this));
+	}
+
+	setTilemapLayers({
+		collisionLayer,
+		worldLayer,
+	}: {
+		collisionLayer: StaticTilemapLayer;
+		worldLayer: StaticTilemapLayer;
+	}) {
+		this.collisionLayer = collisionLayer;
+		this.worldLayer = worldLayer;
 	}
 
 	addGameObject(obj: GameObject) {
 		this.gameObjects[obj.name] = obj;
-		EngineState.eventBus.dispatch(new GameEvent(EventType.GAME_OBJECT_ADDED, obj));
+		console.log(
+			'world addgameobject dispatching',
+			obj,
+			obj.type,
+			obj.entityType,
+			obj.x,
+			obj.sprite,
+		);
+		EngineState.eventBus.dispatch(
+			new GameEvent(EventType.GAME_OBJECT_ADDED, {
+				name: obj.name,
+				entityType: obj.entityType,
+				x: obj.x,
+				y: obj.y,
+				sprite: obj.sprite,
+			}),
+		);
 	}
 
 	// TODO: Name these two collision methods better

@@ -47,7 +47,6 @@ export default class Person extends Phaser.GameObjects.Sprite {
 		this.setRotation(this.angle);
 	}
 
-	// TODO: Sometimes left/right movement appears blocked after moving for some time, why?
 	tick(game: Phaser.Game, frameTimeMs: number, cursor?) {
 		let xDiff = 0;
 		let yDiff = 0;
@@ -71,7 +70,6 @@ export default class Person extends Phaser.GameObjects.Sprite {
 				xDiff = newXDiff;
 				yDiff = newYDiff;
 			}
-			// console.log(movementAmount, xDiff, yDiff);
 
 			this.move(xDiff, yDiff);
 		}

@@ -1,9 +1,9 @@
-import GameEntitySpawnHandler from './GameEntitySpawnLoop';
+import EngineState from '../EngineState';
+import ClientState from './ClientState';
 
 export default class ClientEngine {
-	spawnHandler: GameEntitySpawnHandler;
 	constructor() {
-		// TODO This spawn handler should be on server only
-		this.spawnHandler = new GameEntitySpawnHandler();
+		EngineState.world.initialize();
+		ClientState.game.initialize();
 	}
 }

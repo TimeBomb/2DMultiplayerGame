@@ -1,46 +1,46 @@
 import { Directions } from '../../../helpers/constants';
-import { CollideableGameObject, Rectangle, Faction } from '../../types/objects';
+import { CollideableGameObject, Rectangle, Faction, EntityType } from '../../types/objects';
 import { Clamp, AngleBetweenPoints } from '../../../helpers/math';
 import { Coords, Size } from '../../types/world';
 import Weapon from '../../weapons/weapon';
 import EngineState from '../../../EngineState';
 import { GameEvent, EventType } from '../../types/events';
 import { Uuid } from '../../../helpers/misc';
+import { Engine } from 'matter';
 
-type PersonProps = {
+export type PersonProps = {
 	coordinates: Coords;
 	faction?: Faction;
 };
 
 export default abstract class Person {
 	name: string;
-	weapon: Weapon;
-	x: number;
-	y: number;
-	height: number;
-	width: number;
+	abstract weapon: Weapon;
+	x: number = 0;
+	y: number = 0;
+	abstract height: number;
+	abstract width: number;
 	movementDirections = new Set();
 	respawnTime: number = 3000;
-	movementSpeed: number = 0;
-	health: number = 1;
+	abstract movementSpeed: number;
+	abstract health: number;
 	rotation: number;
-	isHittable = true;
+	isHittable: boolean = true;
 	respawnPosition: Coords;
-	isDead = false;
+	isDead: boolean = false;
 	targetCoords: Coords;
-	faction: Faction;
-	active = true;
-	type = 'Sprite';
+	abstract faction: Faction;
+	active: boolean = true;
+	entityType: EntityType = EntityType.PERSON;
+	type: string = 'Sprite';
+	abstract sprite: string;
 
-	constructor({ coordinates, faction }: PersonProps) {
+	constructor({ coordinates }: PersonProps) {
 		this.respawnPosition = coordinates;
 		this.x = coordinates.x;
 		this.y = coordinates.y;
 		this.name = Uuid();
-
-		if (faction) {
-			this.faction = faction;
-		}
+		EngineState.eventBus.listen(EventType.TICK, this.tick.bind(this));
 	}
 
 	abstract update({ xDiff, yDiff }: { xDiff: number; yDiff: number }): void;
@@ -59,12 +59,18 @@ export default abstract class Person {
 		this.movementDirections.clear();
 	}
 
-	tick(frameTimeMs: number): { xDiff: number; yDiff: number } {
+	tick(): { xDiff: number; yDiff: number } {
+		if (!this.active) return;
+
+		const originalX = this.x;
+		const originalY = this.y;
 		let xDiff = 0;
 		let yDiff = 0;
 
 		if (this.movementDirections.size > 0) {
-			const movementAmount = Math.floor((this.movementSpeed * frameTimeMs) / 100);
+			const movementAmount = Math.floor(
+				(this.movementSpeed * EngineState.timeStep.frameTimeMS) / 100,
+			);
 			const MOVEMENT_STEPS = 5;
 
 			const splitMovementAmount = Math.floor(movementAmount / MOVEMENT_STEPS);
@@ -86,10 +92,23 @@ export default abstract class Person {
 			this.move(xDiff, yDiff);
 		}
 
+		this.update({ xDiff, yDiff });
+
+		console.log('original x, new x, xdiff, ydiff', originalX, this.x, xDiff, yDiff);
+		if (originalX !== this.x || originalY !== this.y) {
+			EngineState.eventBus.dispatch(
+				new GameEvent(EventType.UPDATE_PERSON, {
+					name: this.name,
+					x: this.x,
+					y: this.y,
+				}),
+			);
+		}
+
+		// We allow `update` to be run before rotating to target coords, since AI update target coords in the `update` method
 		if (this.targetCoords) {
 			this.rotateToCoords(this.targetCoords);
 		}
-		this.update({ xDiff, yDiff });
 
 		return { xDiff, yDiff };
 	}
@@ -120,6 +139,7 @@ export default abstract class Person {
 
 	attack() {
 		if (this.isDead) return;
+
 		this.weapon.attack({
 			attackerCoords: { x: this.x, y: this.y },
 			attackerRotation: this.rotation,
@@ -135,17 +155,26 @@ export default abstract class Person {
 		this.isDead = true;
 		this.stopMovement();
 		EngineState.eventBus.dispatch(
-			new GameEvent(EventType.DEAD, {
+			new GameEvent(EventType.PERSON_DEAD, {
 				name: this.name,
 				respawnTime: Date.now() + this.respawnTime,
 			}),
 		);
 	}
 
+	// TODO: Have a default health or something, that should be set on health here instead of `health = 100`
 	respawn() {
 		this.health = 100;
 		this.isDead = false;
 		this.setPosition(this.respawnPosition.x, this.respawnPosition.y);
+		EngineState.eventBus.dispatch(
+			new GameEvent(EventType.UPDATE_PERSON, {
+				name: this.name,
+				x: this.x,
+				y: this.y,
+				health: this.health,
+			}),
+		);
 	}
 
 	setPosition(x, y) {
@@ -159,7 +188,7 @@ export default abstract class Person {
 	}
 
 	onCollide(obj: CollideableGameObject) {
-		if (obj.damage && obj.owner.name !== this.name && obj.owner.faction !== this.faction) {
+		if (obj.damage && obj.ownerName !== this.name && obj.faction !== this.faction) {
 			this.health -= obj.damage;
 			if (this.health <= 0) {
 				this.health = 0;
@@ -180,7 +209,6 @@ export default abstract class Person {
 		const hasCollided = EngineState.world.checkWorldCollisionByObject(objRect);
 		return hasCollided;
 	}
-
 	updateTargetCoords(x, y) {
 		this.targetCoords = { x, y };
 	}
@@ -192,5 +220,9 @@ export default abstract class Person {
 			bottom: this.y + this.height,
 			right: this.x + this.width,
 		};
+	}
+
+	setActive(active: boolean) {
+		this.active = active;
 	}
 }

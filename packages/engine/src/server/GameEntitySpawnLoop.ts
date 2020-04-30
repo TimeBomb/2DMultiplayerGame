@@ -1,7 +1,7 @@
-import EngineState from './EngineState';
-import { EventType } from './common/types/events';
-import Shooter from './common/entities/player/shooter';
-import { Faction } from './common/types/objects';
+import EngineState from '../EngineState';
+import { EventType } from '../common/types/events';
+import Shooter from '../common/entities/player/shooter';
+import { Faction } from '../common/types/objects';
 
 export default class GameEntitySpawnHandler {
 	constructor() {

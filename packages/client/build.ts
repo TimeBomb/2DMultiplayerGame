@@ -22,7 +22,9 @@ async function compile(outputFolder) {
 
 	console.log('Building...');
 	const startTime = new Date();
-	let bundler = browserify(`${__dirname}${sep}main.ts`).plugin(tsify, { esModuleInterop: true });
+	let bundler = browserify(`${__dirname}${sep}..${sep}engine/src/client/main.ts`).plugin(tsify, {
+		esModuleInterop: true,
+	});
 	if (!program.dev) {
 		bundler = bundler
 			.transform(unassertify, { global: true })

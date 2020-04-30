@@ -16,9 +16,11 @@ export interface EnemyProps {
 export default class Enemy extends AI {
 	movementSpeed = 55;
 	health = 100;
-	width: 32;
-	height: 32;
+	width = 32;
+	height = 32;
 	faction = Faction.ENEMY;
+	sprite = 'shooter';
+	weapon;
 
 	constructor({ coordinates }: EnemyProps) {
 		super({
@@ -36,6 +38,8 @@ export default class Enemy extends AI {
 	}
 
 	update() {
+		this.updateTargetCoords(this.currentTarget.target.x, this.currentTarget.target.y);
+
 		const seed = Math.random();
 		if (seed <= this.currentTarget.weights[BehaviorWeight.ATTACK]) {
 			this.attack();
@@ -44,7 +48,7 @@ export default class Enemy extends AI {
 
 	// TODO Eventually improve AI
 	updateTarget(targetObjects: WeightedObject[]) {
-		return targetObjects[0];
+		this.currentTarget = targetObjects[0];
 	}
 
 	getBehaviorRules(): BehaviorRule[] {
