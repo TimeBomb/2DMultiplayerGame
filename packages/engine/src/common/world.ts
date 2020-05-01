@@ -4,6 +4,7 @@ import {
 	GameObject,
 	AggroGameObject,
 	Faction,
+	Bounds,
 } from './types/objects';
 import { StaticTilemapLayer } from './types/world';
 import { RectangleToRectangle, CircleToRectangle } from '../helpers/math';
@@ -116,11 +117,7 @@ export default class World {
 					const aggroRadius = validObjA.isAggroObject ? validObjA : validObjB;
 					const obj = validObjA.isAggroObject ? validObjB : validObjA;
 
-					const objBounds = obj.getBounds();
-					if (obj.hitboxWidth) {
-						objBounds.width = obj.hitboxWidth;
-						objBounds.height = obj.hitboxHeight;
-					}
+					const objBounds = this._objBoundsWithHitbox(obj);
 
 					const isCollided = CircleToRectangle(aggroRadius, obj);
 
@@ -136,17 +133,8 @@ export default class World {
 						aggroCollisionsObjects[aggroRadius.owner.name] = aggroRadius;
 					}
 				} else {
-					const boundsA = validObjA.getBounds();
-					const boundsB = validObjB.getBounds();
-
-					if (validObjA.hitboxWidth) {
-						boundsA.width = validObjA.hitboxWidth;
-						boundsA.height = validObjA.hitboxHeight;
-					}
-					if (validObjB.hitboxWidth) {
-						boundsB.width = validObjB.hitboxWidth;
-						boundsB.height = validObjB.hitboxHeight;
-					}
+					const boundsA = this._objBoundsWithHitbox(validObjA);
+					const boundsB = this._objBoundsWithHitbox(validObjB);
 
 					const isCollided = RectangleToRectangle(boundsA, boundsB);
 					if (isCollided) {
@@ -168,6 +156,16 @@ export default class World {
 
 			aggroObject.onCollide(collidedObjs);
 		});
+	}
+
+	_objBoundsWithHitbox(obj: CollideableGameObject): Bounds {
+		if (!obj.hitboxWidth) return obj.getBounds();
+
+		const bounds = obj.getBounds();
+		bounds.width = obj.hitboxWidth;
+		bounds.height = obj.hitboxHeight;
+
+		return bounds;
 	}
 
 	// Check collision of specific game object on tilemap

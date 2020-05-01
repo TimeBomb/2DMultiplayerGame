@@ -3,6 +3,6 @@
 		"sourceMap": true,
 		"allowSyntheticDefaultImports": true,
 		"esModuleInterop": true,
-		"module": "System"
+		"module": "CommonJS"
 	}
 }

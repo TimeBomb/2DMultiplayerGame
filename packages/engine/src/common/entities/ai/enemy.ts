@@ -1,46 +1,34 @@
 import { Directions } from '../../../helpers/constants';
-import { Faction, AggroGameObject, CollideableGameObject } from '../../types/objects';
+import { Faction } from '../../types/objects';
 import AI from '../base/ai';
 import { Coords } from '../../types/world';
-import Weapon from '../../weapons/weapon';
-import FireStaff from '../../weapons/firestaff';
-import AggroObject from '../../../aibehavior/AggroObject';
 import AttackRule from '../../../aibehavior/rules/AttackRule';
 import BehaviorRule from '../../../aibehavior/BehaviorRule';
 import { WeightedObject, BehaviorWeight } from '../../../aibehavior/BehaviorWeights';
 import MoveRule from '../../../aibehavior/rules/MoveRule';
 import EngineState from '../../../EngineState';
+import Fireball from '../../projectiles/fireball';
+import { PersonProps } from '../base/person';
 
 export interface EnemyProps {
 	coordinates: Coords;
 }
 
-// TODO: Enemy not dying for some reason - check person onCollide
 export default class Enemy extends AI {
 	movementSpeed = 20;
-	health = 100;
+	initialHealth = 100;
 	width = 32;
 	height = 32;
-	hitboxWidth = 50;
-	hitboxHeight = 50;
+	hitboxWidth = 60;
+	hitboxHeight = 60;
 	faction = Faction.ENEMY;
 	sprite = 'player';
-	weapon;
+	weapon = Fireball;
+	aggroRange = 500;
 
-	constructor({ coordinates }: EnemyProps) {
-		super({
-			coordinates,
-		});
-
-		this.weapon = new FireStaff({
-			damage: 10,
-			lifetimeMs: 1500,
-			ownerName: this.name,
-			ownerFaction: this.faction,
-		});
-
-		this.aggroObj = new AggroObject({ owner: this, aggroRange: 500 });
-		EngineState.world.addGameObject(this.aggroObj);
+	constructor({ coordinates }: PersonProps) {
+		super({ coordinates });
+		this.health = this.initialHealth;
 	}
 
 	update({ xDiff, yDiff }: { xDiff: number; yDiff: number }) {

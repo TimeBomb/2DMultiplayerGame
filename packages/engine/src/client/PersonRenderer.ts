@@ -1,8 +1,6 @@
-import ClientState from './ClientState';
 import { GameObjects, Scene } from 'phaser';
 import EngineState from '../EngineState';
 import { EventType } from '../common/types/events';
-import Person from '../common/entities/base/person';
 import { EntityType } from '../common/types/objects';
 
 export default class PersonRenderer {

@@ -1,36 +1,48 @@
 import Person, { PersonProps } from '../base/person';
 import { Faction } from '../../types/objects';
-import FireStaff from '../../weapons/firestaff';
 import { AngleBetweenPoints } from '../../../helpers/math';
+import Fireball from '../../projectiles/fireball';
 
-// TODO: Hold left click to attack, have attack speed
 export default class Shooter extends Person {
 	movementSpeed = 55;
-	health = 10000; // TODO: Lower health
+	initialHealth = 1000;
 	width = 32;
 	height = 32;
+	attackSpeed = 5;
 	hitboxWidth = 40;
 	hitboxHeight = 40;
 	faction = Faction.PLAYER;
 	sprite = 'player';
-	weapon;
+	weapon = Fireball;
 
 	constructor({ coordinates }: PersonProps) {
 		super({ coordinates });
-		this.weapon = new FireStaff({
-			damage: 10,
-			lifetimeMs: 1500,
-			ownerName: this.name,
-			ownerFaction: this.faction,
-		});
+		this.health = this.initialHealth;
 	}
 
-	// TODO: May want to move this logic to generic Person class
+	// The target coords of a player is just their mouse, move this so their rotation angle is maintained while moving
 	update({ xDiff, yDiff }) {
 		if (this.targetCoords) {
 			this.targetCoords.x += xDiff;
 			this.targetCoords.y += yDiff;
 			this.rotation = AngleBetweenPoints(this, this.targetCoords);
 		}
+	}
+
+	handleMouseUp() {
+		this.isAttacking = false;
+	}
+
+	handleMouseDown() {
+		this.isAttacking = true;
+	}
+
+	handlePointerMove(x, y) {
+		this.targetCoords = { x, y };
+	}
+
+	handleBlur() {
+		this.isAttacking = false;
+		this.stopMovement();
 	}
 }

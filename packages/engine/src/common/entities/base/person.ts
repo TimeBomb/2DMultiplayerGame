@@ -2,10 +2,10 @@ import { Directions } from '../../../helpers/constants';
 import { CollideableGameObject, Rectangle, Faction, EntityType } from '../../types/objects';
 import { Clamp, AngleBetweenPoints } from '../../../helpers/math';
 import { Coords, Size } from '../../types/world';
-import Weapon from '../../weapons/weapon';
 import EngineState from '../../../EngineState';
 import { GameEvent, EventType } from '../../types/events';
 import { Uuid } from '../../../helpers/misc';
+import Projectile from '../../projectiles/projectile';
 
 export type PersonProps = {
 	coordinates: Coords;
@@ -14,7 +14,8 @@ export type PersonProps = {
 
 export default abstract class Person {
 	name: string;
-	abstract weapon: Weapon;
+	attackSpeed: number = 0;
+	isAttacking: boolean = false;
 	x: number = 0;
 	y: number = 0;
 	abstract height: number;
@@ -22,7 +23,8 @@ export default abstract class Person {
 	movementDirections = new Set();
 	respawnTime: number = 3000;
 	abstract movementSpeed: number;
-	abstract health: number;
+	health: number = 0;
+	abstract initialHealth: number;
 	rotation: number;
 	isHittable: boolean = true;
 	respawnPosition: Coords;
@@ -32,7 +34,9 @@ export default abstract class Person {
 	active: boolean = true;
 	entityType: EntityType = EntityType.PERSON;
 	type: string = 'Sprite';
+	attackAccumulator: number = 1;
 	abstract sprite: string;
+	abstract weapon: typeof Projectile;
 
 	constructor({ coordinates }: PersonProps) {
 		this.respawnPosition = coordinates;
@@ -59,7 +63,7 @@ export default abstract class Person {
 	}
 
 	tick(): { xDiff: number; yDiff: number } {
-		if (!this.active) return;
+		if (!this.active || this.isDead) return;
 
 		const originalX = this.x;
 		const originalY = this.y;
@@ -67,10 +71,12 @@ export default abstract class Person {
 		let xDiff = 0;
 		let yDiff = 0;
 
+		// Move person
 		if (this.movementDirections.size > 0) {
 			const movementAmount = Math.floor(
 				(this.movementSpeed * EngineState.timeStep.frameTimeMS) / 100,
 			);
+			// Note: Lower movement steps too much and the player can get stuck
 			const MOVEMENT_STEPS = 8;
 
 			const splitMovementAmount = Math.floor(movementAmount / MOVEMENT_STEPS);
@@ -94,13 +100,23 @@ export default abstract class Person {
 
 		// Call update after move, so we dont need to setPosition in update,
 		// and before rotate, so we can update targetCoords in update
-		this.update({ xDiff, yDiff });
+		if (this.update) this.update({ xDiff, yDiff });
+
+		// Always be uppong attackAccumulator, so if enough time has passed, user can attack immediately upon clicking
+		if (this.attackAccumulator < 1) {
+			this.attackAccumulator += (this.attackSpeed * EngineState.timeStep.frameTimeMS) / 1000;
+		}
+		if (this.isAttacking && this.attackAccumulator >= 1) {
+			this.attack();
+			this.attackAccumulator = 0;
+		}
 
 		// We allow `update` to be run before rotating to target coords, since AI update target coords in the `update` method
 		if (this.targetCoords) {
 			this.rotateToCoords(this.targetCoords);
 		}
 
+		// Shoot off UPDATE_PERSON event
 		const updatePersonEventParams: any = {
 			name: this.name,
 		};
@@ -150,15 +166,16 @@ export default abstract class Person {
 	attack() {
 		if (this.isDead) return;
 
-		this.weapon.attack({
+		const projectile = new this.weapon({
+			attackerSize: { width: this.width, height: this.height },
 			attackerCoords: { x: this.x, y: this.y },
-			attackerRotation: this.rotation,
-			attackerSize: {
-				width: this.width,
-				height: this.height,
-			},
+			ownerName: this.name,
+			ownerFaction: this.faction,
 			targetCoords: this.targetCoords,
 		});
+		projectile.initialize();
+
+		EngineState.world.addGameObject(projectile);
 	}
 
 	onDead() {
@@ -172,9 +189,8 @@ export default abstract class Person {
 		);
 	}
 
-	// TODO: Have a default health or something, that should be set on health here instead of `health = 100`
 	respawn() {
-		this.health = 100;
+		this.health = this.initialHealth;
 		this.isDead = false;
 		this.setPosition(this.respawnPosition.x, this.respawnPosition.y);
 		EngineState.eventBus.dispatch(
@@ -198,17 +214,12 @@ export default abstract class Person {
 	}
 
 	onCollide(obj: CollideableGameObject) {
-		// if (this.faction !== Faction.PLAYER && this.type !== 'EngineObject')
-		// if (
-		// 	obj.type === 'Image' &&
-		// 	obj.faction === Faction.PLAYER &&
-		// 	this.faction !== Faction.PLAYER
-		// )
-		// 	console.log('player bullet collided', this);
-		// if (obj.type === 'Image' && obj.faction === Faction.ENEMY && this.faction !== Faction.ENEMY)
-		// 	console.log('enemy bullet collided', this);
-
-		if (obj.damage && obj.ownerName !== this.name && obj.faction !== this.faction) {
+		if (
+			!this.isDead &&
+			obj.damage &&
+			obj.ownerName !== this.name &&
+			obj.faction !== this.faction
+		) {
 			this.health -= obj.damage;
 			if (this.health <= 0) {
 				this.health = 0;

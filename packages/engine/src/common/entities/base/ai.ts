@@ -1,4 +1,4 @@
-import Person from './person';
+import Person, { PersonProps } from './person';
 import { GameObject, CollideableGameObject } from '../../types/objects';
 import {
 	BehaviorWeights,
@@ -7,11 +7,20 @@ import {
 } from '../../../aibehavior/BehaviorWeights';
 import AggroObject from '../../../aibehavior/AggroObject';
 import BehaviorRule from '../../../aibehavior/BehaviorRule';
+import EngineState from '../../../EngineState';
 
 export default abstract class AI extends Person {
 	aiBehaviors: BehaviorWeights;
 	currentTarget: WeightedObject;
 	aggroObj: AggroObject;
+	aggroRange: number;
+
+	constructor({ coordinates }: PersonProps) {
+		super({ coordinates });
+
+		this.aggroObj = new AggroObject({ owner: this, aggroRange: this.aggroRange });
+		EngineState.world.addGameObject(this.aggroObj);
+	}
 
 	abstract getBehaviorRules(target: CollideableGameObject): BehaviorRule[];
 

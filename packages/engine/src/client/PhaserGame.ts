@@ -130,16 +130,20 @@ export default class PhaserGame {
 			},
 		});
 
-		controls.onClick(scene, () => {
-			ClientState.player.engineInstance.attack();
+		controls.onMouseDown(scene, () => {
+			ClientState.player.engineInstance.handleMouseDown();
+		});
+
+		controls.onMouseUp(scene, () => {
+			ClientState.player.engineInstance.handleMouseUp();
 		});
 
 		scene.input.on('pointermove', (pointer) => {
-			ClientState.player.engineInstance.updateTargetCoords(pointer.worldX, pointer.worldY);
+			ClientState.player.engineInstance.handlePointerMove(pointer.worldX, pointer.worldY);
 		});
 
 		window.addEventListener('blur', () => {
-			ClientState.player.engineInstance.stopMovement();
+			ClientState.player.engineInstance.handleBlur();
 		});
 	}
 

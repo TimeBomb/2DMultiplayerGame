@@ -1,3 +1,5 @@
+import Phaser from 'phaser';
+
 export default class GameControls {
 	keyboard;
 
@@ -11,7 +13,11 @@ export default class GameControls {
 		this.keyboard.on(`keyup_${key}`, onKeyup);
 	}
 
-	onClick(scene: Phaser.Scene, callback) {
+	onMouseDown(scene: Phaser.Scene, callback) {
 		scene.input.on('pointerdown', callback);
+	}
+
+	onMouseUp(scene: Phaser.Scene, callback) {
+		scene.input.on('pointerup', callback);
 	}
 }
