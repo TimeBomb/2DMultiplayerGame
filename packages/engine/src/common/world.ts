@@ -114,23 +114,24 @@ export default class World {
 
 				// Comparisons are different for aggro objects
 				if (validObjA.isAggroObject || validObjB.isAggroObject) {
-					const aggroRadius = validObjA.isAggroObject ? validObjA : validObjB;
+					const aggroObj = validObjA.isAggroObject ? validObjA : validObjB;
 					const obj = validObjA.isAggroObject ? validObjB : validObjA;
 
 					const objBounds = this._objBoundsWithHitbox(obj);
 
-					const isCollided = CircleToRectangle(aggroRadius, obj);
+					const isCollided = CircleToRectangle(aggroObj, objBounds);
 
 					// Always define this, so we can make sure we reset the aggro target if everything leaves the enemy's aggro radius
-					aggroCollisions[aggroRadius.owner.name] =
-						aggroCollisions[aggroRadius.owner.name] || [];
+					aggroCollisions[aggroObj.owner.name] =
+						aggroCollisions[aggroObj.owner.name] || [];
+					aggroCollisionsObjects[aggroObj.owner.name] = aggroObj;
 
 					// Enemies can't select themselves as a target
-					if (aggroRadius.owner.name === obj.name) continue;
+					if (aggroObj.owner.name === obj.name) continue;
 
-					if (isCollided && !aggroCollisions[aggroRadius.owner.name]?.includes(obj)) {
-						aggroCollisions[aggroRadius.owner.name].push(obj);
-						aggroCollisionsObjects[aggroRadius.owner.name] = aggroRadius;
+					if (isCollided && !aggroCollisions[aggroObj.owner.name]?.includes(obj)) {
+						aggroCollisions[aggroObj.owner.name].push(obj);
+						aggroCollisionsObjects[aggroObj.owner.name] = aggroObj;
 					}
 				} else {
 					const boundsA = this._objBoundsWithHitbox(validObjA);

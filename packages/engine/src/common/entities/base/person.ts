@@ -62,7 +62,7 @@ export default abstract class Person {
 		this.movementDirections.clear();
 	}
 
-	tick(): { xDiff: number; yDiff: number } {
+	tick() {
 		if (!this.active || this.isDead) return;
 
 		const originalX = this.x;
@@ -130,8 +130,6 @@ export default abstract class Person {
 		EngineState.eventBus.dispatch(
 			new GameEvent(EventType.UPDATE_PERSON, updatePersonEventParams),
 		);
-
-		return { xDiff, yDiff };
 	}
 
 	validateMove(movementAmount, initialXDiff: number, initialYDiff: number) {

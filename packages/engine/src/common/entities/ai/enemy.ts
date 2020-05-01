@@ -14,6 +14,9 @@ export interface EnemyProps {
 	coordinates: Coords;
 }
 
+// TODO: Individual shapes in certain parts of the map should be fixed in position and tied to AI.
+// TODO: After X seconds, move back to original spawn location instead of just stopping movement
+// These map-specific shape objects should not allow the AI to move outside of them, even via aggro
 export default class Enemy extends AI {
 	movementSpeed = 20;
 	initialHealth = 100;
@@ -31,7 +34,7 @@ export default class Enemy extends AI {
 		this.health = this.initialHealth;
 	}
 
-	update({ xDiff, yDiff }: { xDiff: number; yDiff: number }) {
+	aiUpdate({ xDiff, yDiff }: { xDiff: number; yDiff: number }) {
 		if (this.currentTarget) {
 			this.updateTargetCoords(this.currentTarget.target.x, this.currentTarget.target.y);
 
@@ -57,6 +60,9 @@ export default class Enemy extends AI {
 					this.toggleMovementDirection(Directions.Left, false);
 				}
 			}
+		} else {
+			// TODO: After X seconds, move back to original spawn location instead of just stopping movement
+			this.stopMovement();
 		}
 	}
 

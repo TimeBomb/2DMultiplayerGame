@@ -1,15 +1,15 @@
-import { Coords } from '../common/types/world';
 import { CollideableGameObject, AIGameObject, Faction, EntityType } from '../common/types/objects';
 import { Uuid } from '../helpers/misc';
 
 type AggroObjectProps = {
 	owner: AIGameObject;
 	aggroRange: number;
+	maxAggroRange: number;
 };
 
-// TODO: This aggro range isn't working perfectly
-// Sometimes when in aggro range, enemy is not attacking
-// And sometimes when out of aggro range, enemy is still attacking
+// TODO: Verify this aggro object is maintaining aggro when player is in aggro range
+// TODO: Consider adding extended aggro range for certain rules, e.g. can attack at edge of aggro but not move
+// TODO: We should only ever check for collisions if our AI's attentionSpan is reset
 export default class AggroObject {
 	x: number;
 	y: number;
@@ -20,6 +20,7 @@ export default class AggroObject {
 	isAggroObject: boolean = true;
 	active: boolean = true;
 	name: string;
+	collidedObjects: CollideableGameObject[];
 
 	// These are added to make the World instance able to collide with this
 	type: string = 'EngineOnly';
@@ -35,11 +36,6 @@ export default class AggroObject {
 		this.x = owner.x;
 		this.y = owner.y;
 		this.owner = owner;
-	}
-
-	setPosition(x, y) {
-		this.x = x;
-		this.y = y;
 	}
 
 	onCollide(gameObjects: CollideableGameObject[]) {

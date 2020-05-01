@@ -9,17 +9,33 @@ import AggroObject from '../../../aibehavior/AggroObject';
 import BehaviorRule from '../../../aibehavior/BehaviorRule';
 import EngineState from '../../../EngineState';
 
+// TODO: Add attentionSpan to AI, only check/update collisions based on that milliseconds value
 export default abstract class AI extends Person {
 	aiBehaviors: BehaviorWeights;
 	currentTarget: WeightedObject;
 	aggroObj: AggroObject;
 	aggroRange: number;
+	initialized: boolean = false;
 
 	constructor({ coordinates }: PersonProps) {
 		super({ coordinates });
+	}
 
-		this.aggroObj = new AggroObject({ owner: this, aggroRange: this.aggroRange });
+	abstract aiUpdate({ xDiff, yDiff });
+
+	initialize() {
+		this.aggroObj = new AggroObject({
+			owner: this,
+			aggroRange: this.aggroRange,
+			maxAggroRange: this.aggroRange * 2,
+		});
 		EngineState.world.addGameObject(this.aggroObj);
+		this.initialized = true;
+	}
+
+	update({ xDiff, yDiff }) {
+		if (!this.initialized) this.initialize();
+		this.aiUpdate({ xDiff, yDiff });
 	}
 
 	abstract getBehaviorRules(target: CollideableGameObject): BehaviorRule[];
@@ -30,7 +46,8 @@ export default abstract class AI extends Person {
 		this.x = x;
 		this.y = y;
 		// Call setPosition on the aggroObj
-		this.aggroObj.setPosition(x, y);
+		this.aggroObj.x = x;
+		this.aggroObj.y = y;
 	}
 
 	weighTargets(targets: CollideableGameObject[]) {

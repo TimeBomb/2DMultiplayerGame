@@ -14,8 +14,8 @@
 		"uWebSockets.js": "github:uNetworking/uWebSockets.js#v17.3.0"
 	},
 	"scripts": {
-		"build": "ts-node --project ./packages/client/tsconfig.json ./packages/client/build.ts",
-		"build-dev": "ts-node --project ./packages/client/tsconfig.json ./packages/client/build.ts --dev",
+		"build": "ts-node --project ./packages/engine/src/client/tsconfig.json ./packages/client/build.ts",
+		"build-dev": "ts-node --project ./packages/engine/src/client/tsconfig.json ./packages/client/build.ts --dev",
 		"backend": "ts-node ./packages/backend/server.ts",
 		"web": "ts-node --project ./packages/web/tsconfig.json ./packages/web/server.ts"
 	},
