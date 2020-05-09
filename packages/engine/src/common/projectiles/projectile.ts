@@ -5,29 +5,29 @@ import { GameEvent, EventType } from '../types/events';
 import { Coords } from '../types/world';
 
 export default class Projectile {
-	x: number = 0;
-	y: number = 0;
-	width: number = 0;
-	height: number = 0;
+	x  = 0;
+	y = 0;
+	width = 0;
+	height = 0;
 	name: string;
 	direction: number;
-	xSpeed: number = 0;
-	ySpeed: number = 0;
-	bulletLifetime: number = 0;
-	damage: number = 0;
-	born: number = 0;
+	xSpeed = 0;
+	ySpeed = 0;
+	bulletLifetime = 0;
+	damage = 0;
+	born = 0;
 	ownerName: string; // Identifier of the person that shot this bullet
 	faction: Faction;
-	active: boolean = true;
+	active = true;
 	modifiers: WeaponModifiers;
 	entityType: EntityType = EntityType.PROJECTILE;
-	type: string = 'Image';
-	deleted: boolean = false;
+	type = 'Image';
+	deleted = false;
 	attackerCoords: Coords;
 	attackerSize: { width: number; height: number };
 	targetCoords: Coords;
 	sprite: string;
-	doTick: boolean = true;
+	doTick = true;
 
 	constructor({
 		ownerName,

@@ -4,8 +4,8 @@ export function Clamp(number, min, max) {
 
 // Below functions copied from Phaser so we don't have to import phaser
 export function DistanceBetweenPoints(a, b) {
-	var dx = a.x - b.x;
-	var dy = a.y - b.y;
+	const dx = a.x - b.x;
+	const dy = a.y - b.y;
 
 	return Math.sqrt(dx * dx + dy * dy);
 }
@@ -28,24 +28,24 @@ export function RectangleToRectangle(rectA, rectB) {
 }
 
 export function CircleToRectangle(circle, rect) {
-	var halfWidth = rect.width / 2;
-	var halfHeight = rect.height / 2;
+	const halfWidth = rect.width / 2;
+	const halfHeight = rect.height / 2;
 
-	var cx = Math.abs(circle.x - rect.x - halfWidth);
-	var cy = Math.abs(circle.y - rect.y - halfHeight);
-	var xDist = halfWidth + circle.radius;
-	var yDist = halfHeight + circle.radius;
+	const cx = Math.abs(circle.x - rect.x - halfWidth);
+	const cy = Math.abs(circle.y - rect.y - halfHeight);
+	const xDist = halfWidth + circle.radius;
+	const yDist = halfHeight + circle.radius;
 
 	if (cx > xDist || cy > yDist) {
 		return false;
 	} else if (cx <= halfWidth || cy <= halfHeight) {
 		return true;
 	} else {
-		var xCornerDist = cx - halfWidth;
-		var yCornerDist = cy - halfHeight;
-		var xCornerDistSq = xCornerDist * xCornerDist;
-		var yCornerDistSq = yCornerDist * yCornerDist;
-		var maxCornerDistSq = circle.radius * circle.radius;
+		const xCornerDist = cx - halfWidth;
+		const yCornerDist = cy - halfHeight;
+		const xCornerDistSq = xCornerDist * xCornerDist;
+		const yCornerDistSq = yCornerDist * yCornerDist;
+		const maxCornerDistSq = circle.radius * circle.radius;
 
 		return xCornerDistSq + yCornerDistSq <= maxCornerDistSq;
 	}

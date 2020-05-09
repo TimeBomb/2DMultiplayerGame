@@ -8,7 +8,7 @@ import PlayerNetworkState from './PlayerNetworkState';
 const URL = 'ws://localhost:8123';
 export default class WebSocketHandler {
 	ws: WebSocket;
-	connected: boolean = false;
+	connected = false;
 	storedPlayerEvents: GameEvent[] = [];
 	playerNetworkState: PlayerNetworkState;
 
@@ -21,6 +21,7 @@ export default class WebSocketHandler {
 
 		this.playerNetworkState = new PlayerNetworkState();
 		EngineState.eventBus.listen(EventType.NETWORK_TICK, this.sendMessages.bind(this));
+		EngineState.eventBus.listen(EventType.TICK, this.handlePlayerEvent.bind(this));
 	}
 
 	// Connection to websocket server opens
@@ -39,12 +40,12 @@ export default class WebSocketHandler {
 		gameEvents.forEach((gameEvent) => EngineState.eventBus.dispatch(gameEvent));
 	}
 
-	// Receive client event message from our event bus
+	// Every tick, grab player network state and push to event
 	handlePlayerEvent(event: GameEvent) {
-		this.storedPlayerEvents.push(event);
+		this.storedPlayerEvents.push(this.playerNetworkState.toEvent());
 	}
 
-	// Send message to the websocket server
+	// Every network tick, send message to websocket server with all player network states
 	sendMessages(events: GameEvent[]) {
 		if (!this.connected) return;
 

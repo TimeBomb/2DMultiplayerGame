@@ -1,6 +1,5 @@
 import { CollideableGameObject, AIGameObject, Faction, EntityType } from '../common/types/objects';
 import { Uuid } from '../helpers/misc';
-import { DistanceBetweenPoints } from '../helpers/math';
 
 type AggroObjectProps = {
 	owner: AIGameObject;
@@ -15,13 +14,13 @@ export default class AggroObject {
 	height: number;
 	radius: number;
 	owner: AIGameObject;
-	isAggroObject: boolean = true;
-	active: boolean = true;
+	isAggroObject = true;
+	active = true;
 	name: string;
 	collidedObjects: CollideableGameObject[];
 
 	// These are added to make the World instance able to collide with this
-	type: string = 'EngineOnly';
+	type = 'EngineOnly';
 	faction: Faction = Faction.ENEMY;
 	sprite: string;
 	entityType: EntityType = EntityType.OTHER;

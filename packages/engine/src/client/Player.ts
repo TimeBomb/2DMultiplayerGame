@@ -8,7 +8,7 @@ export default class Player {
 	phaserInstance: GameObjects.Sprite;
 
 	initialize() {
-		const player = new Shooter({ coordinates: { x: 0, y: 0 } });
+		const player = new Shooter({ coordinates: { x: 900, y: 900 } });
 		EngineState.world.addGameObject(player);
 
 		this.phaserInstance = ClientState.personRenderer.persons[player.name];

@@ -31,6 +31,7 @@ export default class PhaserGame {
 			parent: 'game',
 			width: 3200,
 			height: 3200,
+			roundPixels: true,
 			scale: {
 				mode: Phaser.Scale.RESIZE,
 			},
@@ -78,16 +79,17 @@ export default class PhaserGame {
 		// Initialize camera
 		scene.cameras.main.zoom = 0.6;
 		scene.cameras.main.startFollow(ClientState.player.phaserInstance);
+		scene.cameras.main.setRoundPixels(true)
 
 		// Initialize player controls
 		const controls = new GameControls(scene.input.keyboard);
 		controls.addKey({
 			key: 'W',
 			onKeydown: () => {
-				ClientState.player.engineInstance.toggleMovementDirection(Directions.Forward, true);
+				ClientState.player.engineInstance.handlePlayerMove(Directions.Forward, true)
 			},
 			onKeyup: () => {
-				ClientState.player.engineInstance.toggleMovementDirection(
+				ClientState.player.engineInstance.handlePlayerMove(
 					Directions.Forward,
 					false,
 				);
@@ -96,13 +98,13 @@ export default class PhaserGame {
 		controls.addKey({
 			key: 'S',
 			onKeydown: () => {
-				ClientState.player.engineInstance.toggleMovementDirection(
+				ClientState.player.engineInstance.handlePlayerMove(
 					Directions.Backward,
 					true,
 				);
 			},
 			onKeyup: () => {
-				ClientState.player.engineInstance.toggleMovementDirection(
+				ClientState.player.engineInstance.handlePlayerMove(
 					Directions.Backward,
 					false,
 				);
@@ -111,19 +113,19 @@ export default class PhaserGame {
 		controls.addKey({
 			key: 'A',
 			onKeydown: () => {
-				ClientState.player.engineInstance.toggleMovementDirection(Directions.Left, true);
+				ClientState.player.engineInstance.handlePlayerMove(Directions.Left, true);
 			},
 			onKeyup: () => {
-				ClientState.player.engineInstance.toggleMovementDirection(Directions.Left, false);
+				ClientState.player.engineInstance.handlePlayerMove(Directions.Left, false);
 			},
 		});
 		controls.addKey({
 			key: 'D',
 			onKeydown: () => {
-				ClientState.player.engineInstance.toggleMovementDirection(Directions.Right, true);
+				ClientState.player.engineInstance.handlePlayerMove(Directions.Right, true);
 			},
 			onKeyup: () => {
-				ClientState.player.engineInstance.toggleMovementDirection(Directions.Right, false);
+				ClientState.player.engineInstance.handlePlayerMove(Directions.Right, false);
 			},
 		});
 
@@ -137,12 +139,15 @@ export default class PhaserGame {
 
 		scene.input.on('pointermove', (pointer) => {
 			ClientState.player.engineInstance.handlePointerMove(pointer.worldX, pointer.worldY);
-			light.setPosition(pointer.worldX, pointer.worldY);
 		});
 
 		window.addEventListener('blur', () => {
 			ClientState.player.engineInstance.handleBlur();
 		});
+
+		window.addEventListener('focus', () => {
+			ClientState.player.engineInstance.handleFocus();
+		})
 	}
 
 	update(scene: Phaser.Scene) {

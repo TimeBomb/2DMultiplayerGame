@@ -11,6 +11,8 @@ export class GameEvent {
 }
 
 export type PlayerEvent = {
+	timestamp: number;
+	name: string;
 	type: EventType.PLAYER_UPDATE;
 	mousePos: Coords;
 	primaryActionPressed: 0 | 1;
@@ -25,7 +27,6 @@ export enum EventType {
 	LONG_TICK, // This is executed after the tick method is run
 
 	// Game events
-	ATTACK, // This is run by Person after attacking
 	PERSON_DEAD, // This is run by Person after they die
 	GAME_OBJECT_ADDED, // This is run by World after addGameObject is executed
 	UPDATE_PERSON, // This is run by Person after certain position or status changes or death
@@ -35,14 +36,7 @@ export enum EventType {
 	// Player-triggered events
 	PLAYER_PRIMARY_DOWN, // i.e. Left click down
 	PLAYER_PRIMARY_UP, // i.e. Left click up
-	PLAYER_MOVE_UP_KEYDOWN, // i.e. W
-	PLAYER_MOVE_UP_KEYUP, // i.e. W
-	PLAYER_MOVE_DOWN_KEYDOWN, // i.e. S
-	PLAYER_MOVE_DOWN_KEYUP, // i.e. S
-	PLAYER_MOVE_LEFT_KEYDOWN, // i.e. A
-	PLAYER_MOVE_LEFT_KEYUP, // i.e. A
-	PLAYER_MOVE_RIGHT_KEYDOWN, // i.e. D
-	PLAYER_MOVE_RIGHT_KEYUP, // i.e. D
+	PLAYER_MOVE, // Called when player presses movement key up or down, with `direction` and `pressed` properties
 	PLAYER_WINDOW_BLUR, // i.e. blur window
 	PLAYER_WINDOW_FOCUS, // i.e. window has been focused
 	PLAYER_MOUSE_MOVE, // i.e. mouse move

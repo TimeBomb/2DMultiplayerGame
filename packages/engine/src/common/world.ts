@@ -3,7 +3,6 @@ import {
 	Rectangle,
 	GameObject,
 	AggroGameObject,
-	Faction,
 	Bounds,
 } from './types/objects';
 import { StaticTilemapLayer } from './types/world';
@@ -158,7 +157,7 @@ export default class World {
 	// Check collision of specific game object on tilemap
 	// This logic is about the same as the phaser arcade physics `collideSpriteVsTilesHandler`
 	// Returns true if collided, false if not
-	checkWorldCollisionByObject(objBounds: Rectangle): Boolean {
+	checkWorldCollisionByObject(objBounds: Rectangle): boolean {
 		// Get the individual tiles next to object
 		let leftTile = Math.round(objBounds.left / this.collisionLayer.tilemap.tileWidth) - 1;
 		let rightTile = Math.round(objBounds.right / this.collisionLayer.tilemap.tileWidth) - 1;

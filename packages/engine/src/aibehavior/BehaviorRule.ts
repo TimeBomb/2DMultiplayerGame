@@ -6,8 +6,6 @@ export default abstract class BehaviorRule {
 	compatibleBehaviors: BehaviorWeight[];
 	behaviorWeight: BehaviorWeight;
 
-	constructor() {}
-
 	// Should use owner and target to come up with specific modifier to weight
 	abstract run(owner: GameObject, target: GameObject): number;
 }

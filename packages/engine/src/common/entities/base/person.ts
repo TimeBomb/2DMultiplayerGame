@@ -1,7 +1,7 @@
 import { Directions } from '../../../helpers/constants';
 import { CollideableGameObject, Rectangle, Faction, EntityType } from '../../types/objects';
 import { Clamp, AngleBetweenPoints } from '../../../helpers/math';
-import { Coords, Size } from '../../types/world';
+import { Coords } from '../../types/world';
 import EngineState from '../../../EngineState';
 import { GameEvent, EventType } from '../../types/events';
 import { Uuid } from '../../../helpers/misc';
@@ -16,28 +16,28 @@ export type PersonProps = {
 
 export default abstract class Person {
 	name: string;
-	attackSpeed: number = 0;
-	isAttacking: boolean = false;
-	x: number = 0;
-	y: number = 0;
+	attackSpeed = 0;
+	isAttacking = false;
+	x = 0;
+	y = 0;
 	abstract height: number;
 	abstract width: number;
 	movementDirections = new Set();
-	respawnTime: number = 3000;
+	respawnTime = 3000;
 	abstract movementSpeed: number;
-	health: number = 0;
+	health = 0;
 	abstract initialHealth: number;
 	rotation: number;
-	isHittable: boolean = true;
+	isHittable = true;
 	respawnPosition: Coords;
-	isDead: boolean = false;
+	isDead = false;
 	targetCoords: Coords;
 	abstract faction: Faction;
-	active: boolean = true;
+	active = true;
 	entityType: EntityType = EntityType.PERSON;
-	type: string = 'Sprite';
-	attackAccumulator: number = 1;
-	doTick: boolean = true;
+	type = 'Sprite';
+	attackAccumulator = 1;
+	doTick = true;
 	abstract sprite: string;
 	abstract weapon: typeof Projectile;
 
@@ -52,7 +52,7 @@ export default abstract class Person {
 
 	abstract update({ xDiff, yDiff }: { xDiff: number; yDiff: number }): void;
 
-	toggleMovementDirection(direction: Directions, toggleOn: boolean) {
+toggleMovementDirection(direction: Directions, toggleOn: boolean) {
 		if (this.isDead) return;
 
 		if (toggleOn) {

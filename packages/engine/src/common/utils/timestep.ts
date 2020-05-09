@@ -7,11 +7,11 @@ import EngineState from '../../EngineState';
 // In the future if network tick needs to be less than frame tick, it can be added here
 export default class TimeStep {
 	frameTimeMS: number;
-	frameTickProgress: number = 0;
-	frameTickElapsed: number = 0;
+	frameTickProgress = 0;
+	frameTickElapsed = 0;
 	longTickMS: number;
-	longTickProgress: number = 0;
-	longTickElapsed: number = 0;
+	longTickProgress = 0;
+	longTickElapsed = 0;
 
 	constructor({ fps, longTickMS }: { fps: number; longTickMS: number }) {
 		this.frameTimeMS = 1000 / fps;

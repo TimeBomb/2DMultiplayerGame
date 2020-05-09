@@ -1,4 +1,4 @@
-import Person, { PersonProps } from './person';
+import Person from './person';
 import { CollideableGameObject } from '../../types/objects';
 import { BehaviorWeights, WeightedObject } from '../../../aibehavior/BehaviorWeights';
 import AggroObject from '../../../aibehavior/AggroObject';
@@ -10,9 +10,9 @@ export default abstract class AI extends Person {
 	currentTarget: WeightedObject;
 	aggroObj: AggroObject;
 	aggroRange: number;
-	initialized: boolean = false;
-	attentionSpan: number = 0;
-	currentAttentionSpan: number = 0;
+	initialized = false;
+	attentionSpan = 0;
+	currentAttentionSpan = 0;
 
 	abstract aiUpdate({ xDiff, yDiff });
 

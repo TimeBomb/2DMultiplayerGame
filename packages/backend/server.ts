@@ -3,9 +3,9 @@ import WebSocket from 'ws';
 import { deserialize } from '../engine/src/helpers/serializer';
 import ServerEngine from '../engine/src/server/ServerEngine';
 import EngineState from '../engine/src/EngineState';
-import { GameEvent } from '../engine/src/common/types/events';
+import { GameEvent, EventType } from '../engine/src/common/types/events';
 
-// TODO: Should take client events of keypresses and process in engine, this is a WIP
+// TODO: Should take client events of keypresses and process in engine
 // Engine [for client] needs to support adding and updating entites by name - players and projectiles
 
 // Projectiles need to only be corrected if desynced on client, should still have logic run on client
@@ -73,7 +73,7 @@ export default class Server {
 						(eventChunk) =>
 							new GameEvent(eventChunk.type, { ...eventChunk, type: undefined }),
 					);
-					gameEvents.forEach((gameEvent) => EngineState.eventBus.dispatch(gameEvent));
+					gameEvents.forEach(this.gameEventHandler);
 				} catch {}
 			});
 
@@ -91,4 +91,12 @@ export default class Server {
 		// TODO: Implement this
 		// EngineState.eventBus.listenAll()
 	}
+
+	gameEventHandler(gameEvent: GameEvent) {
+		switch (gameEvent.type) {
+			case EventType.PLAYER_UPDATE:
+				break;
+
+		}
+ 	}
 }

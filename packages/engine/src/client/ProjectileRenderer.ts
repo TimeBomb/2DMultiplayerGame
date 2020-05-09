@@ -2,7 +2,6 @@ import EngineState from '../EngineState';
 import { EventType } from '../common/types/events';
 import { EntityType } from '../common/types/objects';
 import { GameObjects, Scene } from 'phaser';
-import Projectile from '../common/projectiles/projectile';
 
 export default class ProjectileRenderer {
 	projectiles: { [key: string]: GameObjects.Image } = {};

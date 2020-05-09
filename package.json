@@ -3,6 +3,8 @@
 	"dependencies": {
 		"@types/koa": "^2.11.3",
 		"@types/uglify-js": "^3.0.5",
+		"@typescript-eslint/eslint-plugin": "^2.31.0",
+		"@typescript-eslint/parser": "^2.31.0",
 		"browserify": "^16.5.1",
 		"esmify": "^2.1.1",
 		"express": "^4.17.1",
@@ -19,13 +21,20 @@
 		"build": "ts-node --project ./packages/engine/src/client/tsconfig.json ./packages/client/build.ts",
 		"build-dev": "ts-node --project ./packages/engine/src/client/tsconfig.json ./packages/client/build.ts --dev",
 		"backend": "ts-node --project ./packages/backend/tsconfig.json ./packages/backend/run.ts",
-		"web": "ts-node --project ./packages/web/tsconfig.json ./packages/web/server.ts"
+		"web": "ts-node --project ./packages/web/tsconfig.json ./packages/web/server.ts",
+		"lint": "eslint **/*.ts"
 	},
 	"devDependencies": {
 		"browser-pack-flat": "^3.4.2",
 		"commander": "^5.0.0",
 		"common-shakeify": "^0.6.2",
 		"envify": "^4.1.0",
+		"eslint": "^6.8.0",
+		"eslint-config-airbnb": "^18.1.0",
+		"eslint-plugin-import": "^2.20.2",
+		"eslint-plugin-jsx-a11y": "^6.2.3",
+		"eslint-plugin-react": "^7.19.0",
+		"eslint-plugin-react-hooks": "^2.5.0",
 		"tinyify": "^2.5.2",
 		"ts-node": "^8.8.2",
 		"typescript": "^3.8.3",
