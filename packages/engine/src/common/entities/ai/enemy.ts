@@ -6,7 +6,6 @@ import AttackRule from '../../../aibehavior/rules/AttackRule';
 import BehaviorRule from '../../../aibehavior/BehaviorRule';
 import { WeightedObject, BehaviorWeight } from '../../../aibehavior/BehaviorWeights';
 import MoveRule from '../../../aibehavior/rules/MoveRule';
-import EngineState from '../../../EngineState';
 import Fireball from '../../projectiles/fireball';
 import { PersonProps } from '../base/person';
 
@@ -27,10 +26,11 @@ export default class Enemy extends AI {
 	faction = Faction.ENEMY;
 	sprite = 'player';
 	weapon = Fireball;
-	aggroRange = 500;
+	aggroRange = 900;
+	attentionSpan = 1000;
 
-	constructor({ coordinates }: PersonProps) {
-		super({ coordinates });
+	constructor(args: PersonProps) {
+		super(args);
 		this.health = this.initialHealth;
 	}
 
@@ -68,15 +68,11 @@ export default class Enemy extends AI {
 
 	// TODO Eventually improve AI
 	updateTarget(targetObjects: WeightedObject[]) {
-		if (!targetObjects.length) {
-			this.currentTarget = null;
-			return;
-		}
-
 		this.currentTarget = targetObjects[0];
 	}
 
+	// TODO: Create chase and run away rules
 	getBehaviorRules(): BehaviorRule[] {
-		return [new AttackRule(), new MoveRule()];
+		return [new MoveRule(), new AttackRule(this.aggroRange * 0.6)];
 	}
 }

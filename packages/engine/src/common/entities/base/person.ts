@@ -10,6 +10,8 @@ import Projectile from '../../projectiles/projectile';
 export type PersonProps = {
 	coordinates: Coords;
 	faction?: Faction;
+	doTick?: boolean;
+	name?: string;
 };
 
 export default abstract class Person {
@@ -35,14 +37,16 @@ export default abstract class Person {
 	entityType: EntityType = EntityType.PERSON;
 	type: string = 'Sprite';
 	attackAccumulator: number = 1;
+	doTick: boolean = true;
 	abstract sprite: string;
 	abstract weapon: typeof Projectile;
 
-	constructor({ coordinates }: PersonProps) {
+	constructor({ coordinates, doTick, name }: PersonProps) {
+		if (typeof doTick !== 'undefined') this.doTick = doTick;
 		this.respawnPosition = coordinates;
 		this.x = coordinates.x;
 		this.y = coordinates.y;
-		this.name = Uuid();
+		if (!name) this.name = Uuid();
 		EngineState.eventBus.listen(EventType.TICK, this.tick.bind(this));
 	}
 
@@ -63,7 +67,7 @@ export default abstract class Person {
 	}
 
 	tick() {
-		if (!this.active || this.isDead) return;
+		if (!this.active || this.isDead || !this.doTick) return;
 
 		const originalX = this.x;
 		const originalY = this.y;
@@ -162,7 +166,7 @@ export default abstract class Person {
 	}
 
 	attack() {
-		if (this.isDead) return;
+		if (this.isDead || !this.targetCoords) return;
 
 		const projectile = new this.weapon({
 			attackerSize: { width: this.width, height: this.height },

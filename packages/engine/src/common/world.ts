@@ -11,15 +11,8 @@ import { RectangleToRectangle, CircleToRectangle } from '../helpers/math';
 import EngineState from '../EngineState';
 import { GameEvent, EventType } from './types/events';
 
-// TODO for client and server: Need to make this only contain common logic between server and client
-// Server will specifically have to worry about replicating collideable tileset for this.collisionLayer
-// Client can implement most of this rendering
-// Server may be able to use tmxjs, or perhaps we can just create our own
-// script that can setup the collideable tilemap so we can iterate over it
-// Need to make sure client and server world.ts engine files are both passes collision+world layer
 export default class World {
 	collisionLayer: StaticTilemapLayer;
-	worldLayer: StaticTilemapLayer;
 	gameObjects: { [key: string]: GameObject } = {};
 	deadGameObjects: { name: string; respawnTime: number }[] = [];
 
@@ -31,15 +24,8 @@ export default class World {
 		EngineState.eventBus.listen(EventType.TICK, this.checkCollisionForObjects.bind(this));
 	}
 
-	setTilemapLayers({
-		collisionLayer,
-		worldLayer,
-	}: {
-		collisionLayer: StaticTilemapLayer;
-		worldLayer: StaticTilemapLayer;
-	}) {
+	setTilemapLayers(collisionLayer: StaticTilemapLayer) {
 		this.collisionLayer = collisionLayer;
-		this.worldLayer = worldLayer;
 	}
 
 	addGameObject(obj: GameObject) {

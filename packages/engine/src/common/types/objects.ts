@@ -20,7 +20,7 @@ export interface GameObject {
 	respawn?: () => void;
 }
 
-// TODO: CollideableGameObject may not be right name for this
+// TODO: AIGameObject and CollideableGameObject may not be right name for this
 export interface AIGameObject extends GameObject {
 	updateTarget: (weightedTargets: WeightedObject[]) => void;
 	weighTargets: (targets: CollideableGameObject[]) => void;

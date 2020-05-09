@@ -47,10 +47,8 @@ export default class PhaserGame {
 	preload(scene: Phaser.Scene) {
 		console.log('phasergame preloading');
 		// Load in images and sprites
-		scene.load.spritesheet('player', 'assets/sprites/player.png', {
-			frameWidth: 32,
-			frameHeight: 32,
-		}); // Made by tokkatrain: https://tokkatrain.itch.io/top-down-basic-set
+		scene.load.image('player', ['assets/sprites/player.png']);
+
 		scene.load.image('bullet', 'assets/sprites/bullets/bullet6.png');
 		scene.load.image('target', 'assets/demoscene/ball.png');
 		scene.load.tilemapTiledJSON('map', 'assets/tilemaps/map.json');
@@ -64,11 +62,11 @@ export default class PhaserGame {
 		});
 
 		const tileset = map.addTilesetImage('blowharder', 'tiles');
-		const worldLayer = map.createStaticLayer('World', tileset, 0, 0);
+		map.createStaticLayer('World', tileset, 0, 0);
 		const collisionLayer = map
 			.createStaticLayer('Collision', tileset, 0, 0)
 			.setCollisionByExclusion([0, -1]);
-		EngineState.world.setTilemapLayers({ worldLayer, collisionLayer });
+		EngineState.world.setTilemapLayers(collisionLayer);
 
 		ClientState.personRenderer.initialize(scene);
 		ClientState.projectileRenderer.initialize(scene);
@@ -79,7 +77,6 @@ export default class PhaserGame {
 
 		// Initialize camera
 		scene.cameras.main.zoom = 0.6;
-		console.log(ClientState.player.phaserInstance);
 		scene.cameras.main.startFollow(ClientState.player.phaserInstance);
 
 		// Initialize player controls
@@ -140,6 +137,7 @@ export default class PhaserGame {
 
 		scene.input.on('pointermove', (pointer) => {
 			ClientState.player.engineInstance.handlePointerMove(pointer.worldX, pointer.worldY);
+			light.setPosition(pointer.worldX, pointer.worldY);
 		});
 
 		window.addEventListener('blur', () => {

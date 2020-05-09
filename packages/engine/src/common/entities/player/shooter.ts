@@ -15,8 +15,8 @@ export default class Shooter extends Person {
 	sprite = 'player';
 	weapon = Fireball;
 
-	constructor({ coordinates }: PersonProps) {
-		super({ coordinates });
+	constructor(args: PersonProps) {
+		super(args);
 		this.health = this.initialHealth;
 	}
 

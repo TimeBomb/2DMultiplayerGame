@@ -49,6 +49,7 @@ export default class TimeStep {
 			this.frameTickElapsed -= this.frameTimeMS;
 
 			EngineState.eventBus.dispatch(new GameEvent(EventType.TICK));
+			EngineState.eventBus.dispatch(new GameEvent(EventType.NETWORK_TICK));
 		}
 		while (this.longTickElapsed >= this.longTickMS) {
 			this.longTickElapsed -= this.longTickMS;

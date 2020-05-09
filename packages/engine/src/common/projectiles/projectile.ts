@@ -27,6 +27,7 @@ export default class Projectile {
 	attackerSize: { width: number; height: number };
 	targetCoords: Coords;
 	sprite: string;
+	doTick: boolean = true;
 
 	constructor({
 		ownerName,
@@ -35,6 +36,7 @@ export default class Projectile {
 		attackerCoords,
 		targetCoords,
 		attackerSize,
+		doTick,
 	}: {
 		ownerName: string;
 		ownerFaction: Faction;
@@ -42,6 +44,7 @@ export default class Projectile {
 		attackerCoords: Coords;
 		targetCoords: Coords;
 		attackerSize: { width: number; height: number };
+		doTick?: boolean;
 	}) {
 		this.name = Uuid();
 		this.ownerName = ownerName;
@@ -50,6 +53,7 @@ export default class Projectile {
 		this.attackerCoords = attackerCoords;
 		this.targetCoords = targetCoords;
 		this.attackerSize = attackerSize;
+		if (typeof doTick !== 'undefined') this.doTick = doTick;
 
 		EngineState.eventBus.listen(EventType.TICK, this.tick.bind(this));
 	}
@@ -63,14 +67,10 @@ export default class Projectile {
 		// This logic tries to make the bullet appear appropriately in front of the player
 		// It's close to accurate but not perfect, may need to tinker more with it
 		// Likely need to incorporate the size of the bullet somewhere
-		const gameWidth = 800;
-		const gameHeight = 600;
-		const widthDivider = gameWidth / this.attackerSize.width;
-		const heightDivider = gameHeight / this.attackerSize.height;
-		if (xDiff > 0) xMod -= Math.max(xDiff / widthDivider, this.attackerSize.width / 2);
-		if (xDiff < 0) xMod += Math.max(xDiff / widthDivider, this.attackerSize.width / 2);
-		if (yDiff > 0) yMod -= Math.max(yDiff / heightDivider, this.attackerSize.height / 2);
-		if (yDiff < 0) yMod += Math.max(yDiff / heightDivider, this.attackerSize.height / 2);
+		if (xDiff > 0) xMod -= Math.max(xDiff / 100, this.attackerSize.width / 2);
+		if (xDiff < 0) xMod += Math.max(xDiff / 100, this.attackerSize.width / 2);
+		if (yDiff > 0) yMod -= Math.max(yDiff / 100, this.attackerSize.height / 2);
+		if (yDiff < 0) yMod += Math.max(yDiff / 100, this.attackerSize.height / 2);
 
 		this.x = this.attackerCoords.x + xMod;
 		this.y = this.attackerCoords.y + yMod; // Initial position
@@ -88,7 +88,7 @@ export default class Projectile {
 	}
 
 	tick() {
-		if (!this.active) return;
+		if (!this.active || !this.doTick) return;
 
 		const originalX = this.x;
 		const originalY = this.y;

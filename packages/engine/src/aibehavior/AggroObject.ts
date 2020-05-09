@@ -1,5 +1,6 @@
 import { CollideableGameObject, AIGameObject, Faction, EntityType } from '../common/types/objects';
 import { Uuid } from '../helpers/misc';
+import { DistanceBetweenPoints } from '../helpers/math';
 
 type AggroObjectProps = {
 	owner: AIGameObject;
@@ -7,9 +8,6 @@ type AggroObjectProps = {
 	maxAggroRange: number;
 };
 
-// TODO: Verify this aggro object is maintaining aggro when player is in aggro range
-// TODO: Consider adding extended aggro range for certain rules, e.g. can attack at edge of aggro but not move
-// TODO: We should only ever check for collisions if our AI's attentionSpan is reset
 export default class AggroObject {
 	x: number;
 	y: number;
@@ -28,11 +26,14 @@ export default class AggroObject {
 	sprite: string;
 	entityType: EntityType = EntityType.OTHER;
 
+	// Aggro is a circle wherein the enemy is in the center of the circle
+	// The passed aggro range is how far away from the enemy someone has to be to aggro it,
+	// i.e. the radius of the circle is the range
 	constructor({ owner, aggroRange }: AggroObjectProps) {
 		this.name = Uuid();
-		this.width = aggroRange;
-		this.height = aggroRange;
-		this.radius = aggroRange / 2;
+		this.width = aggroRange * 2;
+		this.height = aggroRange * 2;
+		this.radius = aggroRange;
 		this.x = owner.x;
 		this.y = owner.y;
 		this.owner = owner;

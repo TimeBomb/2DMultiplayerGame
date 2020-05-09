@@ -1,5 +1,6 @@
 import EngineState from '../EngineState';
 import { EventType } from '../common/types/events';
+import { spawns, enemies } from './enemySpawns';
 
 export default class GameEntitySpawnHandler {
 	constructor() {
@@ -15,5 +16,12 @@ export default class GameEntitySpawnHandler {
 		});
 	}
 
-	initializeSpawns() {}
+	initializeSpawns() {
+		Object.keys(spawns).forEach((spawnType) => {
+			const spawnCoords = spawns[spawnType];
+			spawnCoords.forEach((coords) => {
+				EngineState.world.addGameObject(new enemies[spawnType]({ coordinates: coords }));
+			});
+		});
+	}
 }
