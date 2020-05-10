@@ -1,6 +1,7 @@
 {
 	"name": "2dgame",
 	"dependencies": {
+		"@msgpack/msgpack": "^1.12.1",
 		"@types/koa": "^2.11.3",
 		"@types/uglify-js": "^3.0.5",
 		"@typescript-eslint/eslint-plugin": "^2.31.0",
@@ -21,6 +22,7 @@
 		"build": "ts-node --project ./packages/engine/src/client/tsconfig.json ./packages/client/build.ts",
 		"build-dev": "ts-node --project ./packages/engine/src/client/tsconfig.json ./packages/client/build.ts --dev",
 		"backend": "ts-node --project ./packages/backend/tsconfig.json ./packages/backend/run.ts",
+		"backend-dev": "ts-node --project ./packages/backend/tsconfig.json ./packages/backend/run.ts -d",
 		"web": "ts-node --project ./packages/web/tsconfig.json ./packages/web/server.ts",
 		"lint": "eslint **/*.ts"
 	},

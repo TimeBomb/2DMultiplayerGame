@@ -47,12 +47,12 @@ export default abstract class Person {
 		this.x = coordinates.x;
 		this.y = coordinates.y;
 		if (!name) this.name = Uuid();
-		EngineState.eventBus.listen(EventType.TICK, this.tick.bind(this));
+		EngineState.eventBus.listen(EventType.ENGINE_TICK, this.tick.bind(this));
 	}
 
 	abstract update({ xDiff, yDiff }: { xDiff: number; yDiff: number }): void;
 
-toggleMovementDirection(direction: Directions, toggleOn: boolean) {
+	toggleMovementDirection(direction: Directions, toggleOn: boolean) {
 		if (this.isDead) return;
 
 		if (toggleOn) {
@@ -132,7 +132,7 @@ toggleMovementDirection(direction: Directions, toggleOn: boolean) {
 			updatePersonEventParams.rotation = this.rotation;
 		}
 		EngineState.eventBus.dispatch(
-			new GameEvent(EventType.UPDATE_PERSON, updatePersonEventParams),
+			new GameEvent(EventType.ENGINE_UPDATE_PERSON, updatePersonEventParams),
 		);
 	}
 
@@ -184,7 +184,7 @@ toggleMovementDirection(direction: Directions, toggleOn: boolean) {
 		this.isDead = true;
 		this.stopMovement();
 		EngineState.eventBus.dispatch(
-			new GameEvent(EventType.PERSON_DEAD, {
+			new GameEvent(EventType.ENGINE_PERSON_DEAD, {
 				name: this.name,
 				respawnTime: Date.now() + this.respawnTime,
 			}),
@@ -196,7 +196,7 @@ toggleMovementDirection(direction: Directions, toggleOn: boolean) {
 		this.isDead = false;
 		this.setPosition(this.respawnPosition.x, this.respawnPosition.y);
 		EngineState.eventBus.dispatch(
-			new GameEvent(EventType.UPDATE_PERSON, {
+			new GameEvent(EventType.ENGINE_UPDATE_PERSON, {
 				name: this.name,
 				x: this.x,
 				y: this.y,

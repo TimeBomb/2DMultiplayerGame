@@ -1,41 +1,44 @@
-import { EventType, GameEvent } from './common/types/events';
-
-// These are events that the player triggers, e.g. button moves
-const PlayerEvents: EventType[] = [
-	EventType.PLAYER_PRIMARY_DOWN,
-	EventType.PLAYER_PRIMARY_UP,
-	EventType.PLAYER_MOVE_UP_KEYDOWN,
-	EventType.PLAYER_MOVE_UP_KEYUP,
-	EventType.PLAYER_MOVE_DOWN_KEYDOWN,
-	EventType.PLAYER_MOVE_DOWN_KEYUP,
-	EventType.PLAYER_MOVE_LEFT_KEYDOWN,
-	EventType.PLAYER_MOVE_LEFT_KEYUP,
-	EventType.PLAYER_MOVE_RIGHT_KEYDOWN,
-	EventType.PLAYER_MOVE_RIGHT_KEYUP,
-	EventType.PLAYER_WINDOW_BLUR,
-	EventType.PLAYER_WINDOW_FOCUS,
-	EventType.PLAYER_MOUSE_MOVE,
-];
+import { EventType, GameEvent, EventCategory, getEventCategory } from './common/types/events';
 
 export default class EventBus {
 	listeners = {};
-	playerEventListeners = [];
+	eventTypeListeners = {};
 
-	listen(eventType: EventType, callback: (payload?: any) => void) {
+	// If name is passed, only listens to events coming attached to the specified name
+	listen(eventType: EventType, callback: (payload?: any) => void, name?: string) {
 		this.listeners[eventType] = this.listeners[eventType] || [];
-		this.listeners[eventType].push(callback);
+		if (name) {
+			this.listeners[eventType][name] = this.listeners[eventType][name] || [];
+			this.listeners[eventType][name].push(callback);
+		} else {
+			this.listeners[eventType]['all'] = this.listeners[eventType]['all'] || [];
+			this.listeners[eventType]['all'].push(callback);
+		}
 	}
 
-	listenAllPlayerEvents(callback: (event: GameEvent) => void) {
-		this.playerEventListeners.push(callback);
+	listenAllEventsByCategory(category: EventCategory, callback: (event: GameEvent) => void) {
+		this.eventTypeListeners[category] = this.eventTypeListeners[category] || [];
+		this.eventTypeListeners[category].push(callback);
 	}
 
 	dispatch(event: GameEvent) {
-		if (!this.listeners[event.type]) return;
-		this.listeners[event.type].forEach((callback) => callback(event));
+		const eventCategory = getEventCategory(event.type);
+		if (Array.isArray(this.eventTypeListeners[eventCategory])) {
+			this.eventTypeListeners[eventCategory].forEach((callback) => callback(event));
+		}
 
-		if (PlayerEvents.includes(event.type)) {
-			this.playerEventListeners.forEach((callback) => callback(event));
+		if (this.listeners[event.type]) {
+			// Dispatch to listeners that are listening for all events from this event type
+			if (Array.isArray(this.listeners[event.type]['all'])) {
+				this.listeners[event.type]['all'].forEach((callback) => callback(event));
+			}
+
+			// Dispatch to listeners that are listening to events for this specific event's name
+			if (Array.isArray(this.listeners[event.type][event.payload?.name])) {
+				this.listeners[event.type][event.payload.name].forEach((callback) =>
+					callback(event),
+				);
+			}
 		}
 	}
 }

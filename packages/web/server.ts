@@ -16,4 +16,4 @@ app.use(async (ctx, next) => {
 });
 
 http.createServer(app.callback()).listen(3000);
-console.log('server started on http://localhost:3000');
+console.log('Web frontend started on http://localhost:3000');

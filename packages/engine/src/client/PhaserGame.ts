@@ -46,7 +46,6 @@ export default class PhaserGame {
 	}
 
 	preload(scene: Phaser.Scene) {
-		console.log('phasergame preloading');
 		// Load in images and sprites
 		scene.load.image('player', ['assets/sprites/player.png']);
 
@@ -79,35 +78,26 @@ export default class PhaserGame {
 		// Initialize camera
 		scene.cameras.main.zoom = 0.6;
 		scene.cameras.main.startFollow(ClientState.player.phaserInstance);
-		scene.cameras.main.setRoundPixels(true)
+		scene.cameras.main.setRoundPixels(true);
 
 		// Initialize player controls
 		const controls = new GameControls(scene.input.keyboard);
 		controls.addKey({
 			key: 'W',
 			onKeydown: () => {
-				ClientState.player.engineInstance.handlePlayerMove(Directions.Forward, true)
+				ClientState.player.engineInstance.handlePlayerMove(Directions.Forward, true);
 			},
 			onKeyup: () => {
-				ClientState.player.engineInstance.handlePlayerMove(
-					Directions.Forward,
-					false,
-				);
+				ClientState.player.engineInstance.handlePlayerMove(Directions.Forward, false);
 			},
 		});
 		controls.addKey({
 			key: 'S',
 			onKeydown: () => {
-				ClientState.player.engineInstance.handlePlayerMove(
-					Directions.Backward,
-					true,
-				);
+				ClientState.player.engineInstance.handlePlayerMove(Directions.Backward, true);
 			},
 			onKeyup: () => {
-				ClientState.player.engineInstance.handlePlayerMove(
-					Directions.Backward,
-					false,
-				);
+				ClientState.player.engineInstance.handlePlayerMove(Directions.Backward, false);
 			},
 		});
 		controls.addKey({
@@ -144,10 +134,6 @@ export default class PhaserGame {
 		window.addEventListener('blur', () => {
 			ClientState.player.engineInstance.handleBlur();
 		});
-
-		window.addEventListener('focus', () => {
-			ClientState.player.engineInstance.handleFocus();
-		})
 	}
 
 	update(scene: Phaser.Scene) {

@@ -21,9 +21,15 @@ export default class ProjectileRenderer {
 				return func.bind(instance)(event.payload);
 			};
 		}
-		EngineState.eventBus.listen(EventType.UPDATE_PROJECTILE, rebind(this.updateProjectile));
-		EngineState.eventBus.listen(EventType.GAME_OBJECT_ADDED, rebind(this.addProjectile));
-		EngineState.eventBus.listen(EventType.REMOVE_PROJECTILE, rebind(this.removeProjectile));
+		EngineState.eventBus.listen(
+			EventType.ENGINE_UPDATE_PROJECTILE,
+			rebind(this.updateProjectile),
+		);
+		EngineState.eventBus.listen(EventType.ENGINE_GAME_OBJECT_ADDED, rebind(this.addProjectile));
+		EngineState.eventBus.listen(
+			EventType.ENGINE_REMOVE_PROJECTILE,
+			rebind(this.removeProjectile),
+		);
 
 		this.scene = scene;
 	}

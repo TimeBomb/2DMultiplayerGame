@@ -13,6 +13,11 @@ export interface EnemyProps {
 	coordinates: Coords;
 }
 
+// TODO: Enemies and players need to be updated. One single generic enemy and one player class.
+// And individual classes for different types of AI that can be passed to the Enemy class.
+// And the classes should accept appropriate arguments like size, location, sprite, etc.
+// Figure out how to structure stats and skills for these entities.
+
 // TODO: Individual shapes in certain parts of the map should be fixed in position and tied to AI.
 // TODO: After X seconds, move back to original spawn location instead of just stopping movement
 // These map-specific shape objects should not allow the AI to move outside of them, even via aggro

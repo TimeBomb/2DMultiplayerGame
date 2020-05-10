@@ -5,7 +5,7 @@ import { GameEvent, EventType } from '../types/events';
 import { Coords } from '../types/world';
 
 export default class Projectile {
-	x  = 0;
+	x = 0;
 	y = 0;
 	width = 0;
 	height = 0;
@@ -55,7 +55,7 @@ export default class Projectile {
 		this.attackerSize = attackerSize;
 		if (typeof doTick !== 'undefined') this.doTick = doTick;
 
-		EngineState.eventBus.listen(EventType.TICK, this.tick.bind(this));
+		EngineState.eventBus.listen(EventType.ENGINE_TICK, this.tick.bind(this));
 	}
 
 	initialize() {
@@ -111,7 +111,7 @@ export default class Projectile {
 
 		if (originalX !== this.x || originalY !== this.y) {
 			EngineState.eventBus.dispatch(
-				new GameEvent(EventType.UPDATE_PROJECTILE, {
+				new GameEvent(EventType.ENGINE_UPDATE_PROJECTILE, {
 					name: this.name,
 					x: this.x,
 					y: this.y,
@@ -150,7 +150,7 @@ export default class Projectile {
 		this.active = false;
 		this.deleted = true;
 		EngineState.eventBus.dispatch(
-			new GameEvent(EventType.REMOVE_PROJECTILE, { name: this.name }),
+			new GameEvent(EventType.ENGINE_REMOVE_PROJECTILE, { name: this.name }),
 		);
 	}
 }
