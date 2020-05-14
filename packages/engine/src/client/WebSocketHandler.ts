@@ -1,7 +1,8 @@
-import { GameEvent, EventType, PlayerEvent } from '../common/types/events';
+import { GameEvent, EventType } from '../common/types/events';
 import { serialize, deserialize } from '../helpers/serializer';
 import EngineState from '../EngineState';
 import PlayerNetworkState from './PlayerNetworkState';
+import ClientState from './ClientState';
 
 // TODO: Send Ping/pong events to/from server/client, disconnect if nothing received, also acts as keep alive
 const URL = 'ws://localhost:8123';
@@ -13,11 +14,11 @@ export default class WebSocketHandler {
 
 	// The most up to date, unsent player network event
 	// Deleted upon sending out message to the server
-	latestUnsentPlayerNetworkEvent: PlayerEvent;
+	latestUnsentPlayerNetworkEvent: GameEvent;
 
 	// Last player network event sent
 	// Used to only ensure we only update player network event state if it has changed
-	lastPlayerNetworkEvent: PlayerEvent;
+	lastPlayerNetworkEvent: GameEvent;
 
 	constructor() {
 		this.connect();
@@ -31,11 +32,21 @@ export default class WebSocketHandler {
 		if (this.ws) return;
 
 		this.ws = new WebSocket(URL);
+
+		// This is necessary since we use msgpack
+		this.ws.binaryType = 'arraybuffer';
+
 		this.ws.addEventListener('open', this.handleOpen.bind(this));
 		this.ws.addEventListener('error', this.handleError.bind(this));
 		this.ws.addEventListener('message', this.receiveMessages.bind(this));
 		window.addEventListener('beforeunload', this.handleWindowClose.bind(this));
 		window.addEventListener('close', this.handleClose.bind(this));
+
+		EngineState.eventBus.listen(
+			EventType.NETWORK_LOGIN_SUCCESS,
+			ClientState.player.initializeOnLogin.bind(ClientState.player),
+		);
+		EngineState.eventBus.listen(EventType.NETWORK_LOGIN_FAILURE, this.logoutPlayer.bind(this));
 	}
 
 	// Triggers close on disconnect from client or server, which then attempts to reconnect us
@@ -52,8 +63,15 @@ export default class WebSocketHandler {
 		if (this.connected) return;
 		this.connected = true;
 
-		// TODO: Use session ID to login character or relogin if disconnected
-		const gameEvent = new GameEvent(EventType.NETWORK_LOGIN, {});
+		const sessionCookie = document.cookie.substr(document.cookie.indexOf('__sess_game_'));
+		const sessionId = sessionCookie.substr(
+			sessionCookie.indexOf('=') + 1,
+			sessionCookie.indexOf(';') > 0 ? sessionCookie.indexOf(';') : sessionCookie.length,
+		);
+
+		const gameEvent = new GameEvent(EventType.NETWORK_LOGIN, {
+			sessionId,
+		});
 		this.ws.send(serialize([gameEvent]));
 	}
 
@@ -61,7 +79,7 @@ export default class WebSocketHandler {
 	receiveMessages(event: MessageEvent) {
 		if (!this.connected) return;
 
-		const gameEvents = deserialize(event) as GameEvent[];
+		const gameEvents = deserialize(event.data) as GameEvent[];
 		gameEvents.forEach((gameEvent) => EngineState.eventBus.dispatch(gameEvent));
 	}
 
@@ -69,12 +87,13 @@ export default class WebSocketHandler {
 	handlePlayerEvent(event: GameEvent) {
 		const playerEvent = this.playerNetworkState.toEvent(this.lastPlayerNetworkEvent);
 		if (playerEvent) {
-			// Combine the last network event and this one, so we can pass all the latest props to `toEvent` above when checking if things have changed
+			// Combine the last network event and this one, so we can
+			// pass all the latest props to `toEvent` above when checking if things have changed
 			this.latestUnsentPlayerNetworkEvent = {
-				...this.lastPlayerNetworkEvent,
 				...playerEvent,
+				payload: { ...this.lastPlayerNetworkEvent?.payload, ...playerEvent.payload },
 			};
-			this.lastPlayerNetworkEvent = this.lastPlayerNetworkEvent;
+			this.lastPlayerNetworkEvent = this.latestUnsentPlayerNetworkEvent;
 		}
 	}
 
@@ -88,7 +107,6 @@ export default class WebSocketHandler {
 		}
 
 		this.ws.send(serialize([...this.storedEvents, this.latestUnsentPlayerNetworkEvent]));
-		console.log('uh hi', [...this.storedEvents, this.latestUnsentPlayerNetworkEvent]);
 		this.storedEvents.length = 0;
 		delete this.latestUnsentPlayerNetworkEvent;
 	}
@@ -107,5 +125,11 @@ export default class WebSocketHandler {
 		if (!this.connected) return;
 
 		this.ws.close();
+	}
+
+	logoutPlayer() {
+		console.log('logging out player');
+		document.cookie = '__sess_game_=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+		window.location.href = '/';
 	}
 }

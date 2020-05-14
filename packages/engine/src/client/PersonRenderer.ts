@@ -22,9 +22,9 @@ export default class PersonRenderer {
 			};
 		}
 
-		EngineState.eventBus.listen(EventType.GAME_OBJECT_ADDED, rebind(this.addPerson));
-		EngineState.eventBus.listen(EventType.UPDATE_PERSON, rebind(this.updatePerson));
-		EngineState.eventBus.listen(EventType.PERSON_DEAD, rebind(this.killPerson));
+		EngineState.eventBus.listen(EventType.ENGINE_GAME_OBJECT_ADDED, rebind(this.addPerson));
+		EngineState.eventBus.listen(EventType.ENGINE_UPDATE_PERSON, rebind(this.updatePerson));
+		EngineState.eventBus.listen(EventType.ENGINE_PERSON_DEAD, rebind(this.killPerson));
 
 		this.scene = scene;
 	}

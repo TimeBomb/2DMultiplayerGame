@@ -37,24 +37,24 @@ export default class TimeStep {
 		// Step once
 		if (willStep) {
 			this.frameTickElapsed -= this.frameTimeMS;
-			EngineState.eventBus.dispatch(new GameEvent(EventType.TICK));
+			EngineState.eventBus.dispatch(new GameEvent(EventType.ENGINE_TICK));
 		}
 		if (willLongStep) {
 			this.longTickElapsed -= this.longTickMS;
-			EngineState.eventBus.dispatch(new GameEvent(EventType.LONG_TICK));
+			EngineState.eventBus.dispatch(new GameEvent(EventType.ENGINE_LONG_TICK));
 		}
 
 		// Per fixed timestep, step further if timestep is out of whack
 		while (this.frameTickElapsed >= this.frameTimeMS) {
 			this.frameTickElapsed -= this.frameTimeMS;
 
-			EngineState.eventBus.dispatch(new GameEvent(EventType.TICK));
+			EngineState.eventBus.dispatch(new GameEvent(EventType.ENGINE_TICK));
 			EngineState.eventBus.dispatch(new GameEvent(EventType.NETWORK_TICK));
 		}
 		while (this.longTickElapsed >= this.longTickMS) {
 			this.longTickElapsed -= this.longTickMS;
 
-			EngineState.eventBus.dispatch(new GameEvent(EventType.LONG_TICK));
+			EngineState.eventBus.dispatch(new GameEvent(EventType.ENGINE_LONG_TICK));
 		}
 	}
 }

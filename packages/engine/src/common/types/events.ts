@@ -54,9 +54,10 @@ export enum EventType {
 	NETWORK_UPDATE_ENTITY = 'network/update_entity', // This is passed by the server to the client to update game object state
 	NETWORK_BUTTON_PRESS = 'network/button_press', // This is passed by the client to the server whenever the player presses an action key
 	NETWORK_PLAYER_UPDATE = 'network/player_update', // This is passed by the client to the server every network tick, containing data on what the player is pressing
+	NETWORK_LOGIN_FAILURE = 'network/login_failure', // This is passed by the server if the login is rejected
+	NETWORK_LOGIN_SUCCESS = 'network/login_success', // This is passed by the server if the login is accepted, contains info on the user so we can render them
 }
 
 export function getEventCategory(eventType: EventType) {
-	const eventCategoryStr = eventType.substr(0, eventType.indexOf('/'));
-	return EventCategory[eventCategoryStr];
+	return eventType.substr(0, eventType.indexOf('/'));
 }

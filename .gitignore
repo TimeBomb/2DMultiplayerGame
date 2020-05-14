@@ -1,2 +1,4 @@
 node_modules
 .vscode
+packages/server/secrets.ts
+packages/web/public/js/game.js

@@ -70,70 +70,14 @@ export default class PhaserGame {
 
 		ClientState.personRenderer.initialize(scene);
 		ClientState.projectileRenderer.initialize(scene);
-		ClientState.player.initialize();
+		ClientState.player.initializeScene(scene);
+		ClientState.player.loadPlayer();
 
 		// TODO: REMOVE THIS, only for testing
 		EngineState.world.addGameObject(new Enemy({ coordinates: { x: 1100, y: 1100 } }));
 
 		// Initialize camera
 		scene.cameras.main.zoom = 0.6;
-		scene.cameras.main.startFollow(ClientState.player.phaserInstance);
-		scene.cameras.main.setRoundPixels(true);
-
-		// Initialize player controls
-		const controls = new GameControls(scene.input.keyboard);
-		controls.addKey({
-			key: 'W',
-			onKeydown: () => {
-				ClientState.player.engineInstance.handlePlayerMove(Directions.Forward, true);
-			},
-			onKeyup: () => {
-				ClientState.player.engineInstance.handlePlayerMove(Directions.Forward, false);
-			},
-		});
-		controls.addKey({
-			key: 'S',
-			onKeydown: () => {
-				ClientState.player.engineInstance.handlePlayerMove(Directions.Backward, true);
-			},
-			onKeyup: () => {
-				ClientState.player.engineInstance.handlePlayerMove(Directions.Backward, false);
-			},
-		});
-		controls.addKey({
-			key: 'A',
-			onKeydown: () => {
-				ClientState.player.engineInstance.handlePlayerMove(Directions.Left, true);
-			},
-			onKeyup: () => {
-				ClientState.player.engineInstance.handlePlayerMove(Directions.Left, false);
-			},
-		});
-		controls.addKey({
-			key: 'D',
-			onKeydown: () => {
-				ClientState.player.engineInstance.handlePlayerMove(Directions.Right, true);
-			},
-			onKeyup: () => {
-				ClientState.player.engineInstance.handlePlayerMove(Directions.Right, false);
-			},
-		});
-
-		controls.onMouseDown(scene, () => {
-			ClientState.player.engineInstance.handleMouseDown();
-		});
-
-		controls.onMouseUp(scene, () => {
-			ClientState.player.engineInstance.handleMouseUp();
-		});
-
-		scene.input.on('pointermove', (pointer) => {
-			ClientState.player.engineInstance.handlePointerMove(pointer.worldX, pointer.worldY);
-		});
-
-		window.addEventListener('blur', () => {
-			ClientState.player.engineInstance.handleBlur();
-		});
 	}
 
 	update(scene: Phaser.Scene) {

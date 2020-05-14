@@ -17,10 +17,13 @@ export default class World {
 
 	// We'll have to initialize this after construction since EngineState includes world
 	initialize() {
-		EngineState.eventBus.listen(EventType.PERSON_DEAD, ({ name, respawnTime }) => {
+		EngineState.eventBus.listen(EventType.ENGINE_PERSON_DEAD, ({ name, respawnTime }) => {
 			this.deadGameObjects.push({ name, respawnTime });
 		});
-		EngineState.eventBus.listen(EventType.TICK, this.checkCollisionForObjects.bind(this));
+		EngineState.eventBus.listen(
+			EventType.ENGINE_TICK,
+			this.checkCollisionForObjects.bind(this),
+		);
 	}
 
 	setTilemapLayers(collisionLayer: StaticTilemapLayer) {
@@ -30,7 +33,7 @@ export default class World {
 	addGameObject(obj: GameObject) {
 		this.gameObjects[obj.name] = obj;
 		EngineState.eventBus.dispatch(
-			new GameEvent(EventType.GAME_OBJECT_ADDED, {
+			new GameEvent(EventType.ENGINE_GAME_OBJECT_ADDED, {
 				name: obj.name,
 				entityType: obj.entityType,
 				x: obj.x,

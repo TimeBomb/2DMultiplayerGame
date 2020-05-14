@@ -1,5 +1,5 @@
 import EngineState from '../EngineState';
-import { GameEvent, EventType, PlayerEvent, EventCategory } from '../common/types/events';
+import { GameEvent, EventType, EventCategory } from '../common/types/events';
 import { Directions } from '../helpers/constants';
 
 // This class controls which keys are currently pressed/not pressed,
@@ -64,10 +64,10 @@ export default class PlayerNetworkState {
 	// If arg is passed, returns object containing only base props and props that have changed
 	// Returns null if eventToDiff is passed and matches the props in current state
 	// Otherwise returns normal PlayerEvent
-	toEvent(eventToDiff?: PlayerEvent): PlayerEvent {
-		const event: any = {};
+	toEvent(eventToDiff?: GameEvent): GameEvent {
+		const eventPayload: any = {};
 		// If arg not passed, set eventToDiff to an empty object, ensuring propsToDiff map below sets all props on `event`
-		if (!eventToDiff) eventToDiff = {} as any;
+		if (!eventToDiff) eventToDiff = { payload: {} } as any;
 
 		const propsToDiff = [
 			'primaryActionPressed',
@@ -78,19 +78,19 @@ export default class PlayerNetworkState {
 			'movingRight',
 		];
 
+		// If passed event to diff doesnt exist, or if there is no difference, then eventPayload will be empty
 		propsToDiff.forEach((prop) => {
-			if (eventToDiff[prop] !== this[prop]) {
-				event[prop] = this[prop];
+			if (eventToDiff.payload[prop] !== this[prop]) {
+				eventPayload[prop] = this[prop];
 			}
 		});
 
-		if (Object.keys(event).length > 0) {
-			return {
-				...event,
+		if (Object.keys(eventPayload).length > 0) {
+			return new GameEvent(EventType.NETWORK_PLAYER_UPDATE, {
+				...eventPayload,
 				name: this.name,
 				timestamp: Date.now(),
-				type: EventType.NETWORK_PLAYER_UPDATE,
-			};
+			});
 		}
 
 		return null;
