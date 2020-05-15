@@ -1,14 +1,13 @@
 import Phaser from 'phaser';
 import EngineState from '../EngineState';
-import { Directions } from '../helpers/constants';
-import GameControls from './GameControls';
 import ClientState from './ClientState';
-import Shooter from '../common/entities/player/shooter';
-import Enemy from '../common/entities/ai/enemy';
+import Player from '../common/entities/base/player';
+import AI from '../common/entities/base/ai';
+import SimpleAI from '../common/entities/ai/simple';
 
 export default class PhaserGame {
 	gameInstance: Phaser.Game;
-	player: Shooter;
+	player: Player;
 
 	initialize() {
 		const instance = this;
@@ -48,7 +47,7 @@ export default class PhaserGame {
 	preload(scene: Phaser.Scene) {
 		// Load in images and sprites
 		scene.load.image('player', ['assets/sprites/player.png']);
-
+		scene.load.image('enemy', ['assets/sprites/player.png']);
 		scene.load.image('bullet', 'assets/sprites/bullets/bullet6.png');
 		scene.load.image('target', 'assets/demoscene/ball.png');
 		scene.load.tilemapTiledJSON('map', 'assets/tilemaps/map.json');
@@ -74,7 +73,9 @@ export default class PhaserGame {
 		ClientState.player.loadPlayer();
 
 		// TODO: REMOVE THIS, only for testing
-		EngineState.world.addGameObject(new Enemy({ coordinates: { x: 1100, y: 1100 } }));
+		EngineState.world.addGameObject(
+			new AI(SimpleAI, { coordinates: { x: 1100, y: 1100 }, sprite: 'enemy' }),
+		);
 
 		// Initialize camera
 		scene.cameras.main.zoom = 0.6;

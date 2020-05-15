@@ -1,4 +1,4 @@
-import Person, { PersonProps } from '../base/person';
+import Person, { PersonProps } from './person';
 import { Faction } from '../../types/objects';
 import { AngleBetweenPoints } from '../../../helpers/math';
 import Fireball from '../../projectiles/fireball';
@@ -8,17 +8,17 @@ import { Directions } from '../../../helpers/constants';
 
 // TODO: If logic on player button press becomes more complex, make shared between
 // button press methods and updateActions method
-export default class Shooter extends Person {
+export default class Player extends Person {
 	movementSpeed = 55;
 	initialHealth = 1000;
-	width = 32;
-	height = 32;
 	attackSpeed = 5;
 	hitboxWidth = 40;
 	hitboxHeight = 40;
 	faction = Faction.PLAYER;
 	sprite = 'player';
 	weapon = Fireball;
+	height = 32;
+	width = 32;
 
 	constructor(args: PersonProps) {
 		super(args);

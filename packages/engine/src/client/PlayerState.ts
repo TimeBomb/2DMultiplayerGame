@@ -1,17 +1,16 @@
 import { GameObjects, Scene } from 'phaser';
 
 import EngineState from '../EngineState';
-import Shooter from '../common/entities/player/shooter';
+import Player from '../common/entities/base/player';
 import ClientState from './ClientState';
-import { Coords } from '../common/types/world';
 import { Directions } from '../helpers/constants';
 import GameControls from './GameControls';
-import { EventType, GameEvent } from '../common/types/events';
+import { GameEvent } from '../common/types/events';
 
 // TODO: Move logout on login failure to somewhere more appropriate
 // TODO: Test that login success/failure events are being handled appropriately
-export default class Player {
-	engineInstance: Shooter;
+export default class PlayerState {
+	engineInstance: Player;
 	phaserInstance: GameObjects.Sprite;
 	scene: Scene;
 	user: any;
@@ -25,7 +24,7 @@ export default class Player {
 	}
 
 	loadPlayer() {
-		const player = new Shooter({ coordinates: { x: this.user.x, y: this.user.y } });
+		const player = new Player({ coordinates: { x: this.user.x, y: this.user.y } });
 		EngineState.world.addGameObject(player);
 
 		this.phaserInstance = ClientState.personRenderer.persons[player.name];

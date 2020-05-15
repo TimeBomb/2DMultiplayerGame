@@ -1,5 +1,4 @@
 import { GameEvent, EventType } from '../../engine/src/common/types/events';
-import EngineState from '../../engine/src/EngineState';
 import { getGoogleIdFromSession, getUserIdByGoogleId, getUser } from '../databaseService';
 import { serialize } from '../../engine/src/helpers/serializer';
 

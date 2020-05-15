@@ -1,11 +1,11 @@
 import PhaserGame from './PhaserGame';
-import Player from './Player';
+import PlayerState from './PlayerState';
 import PersonRenderer from './PersonRenderer';
 import ProjectileRenderer from './ProjectileRenderer';
 
 export default {
 	game: new PhaserGame(),
-	player: new Player(),
+	player: new PlayerState(),
 	personRenderer: new PersonRenderer(),
 	projectileRenderer: new ProjectileRenderer(),
 };

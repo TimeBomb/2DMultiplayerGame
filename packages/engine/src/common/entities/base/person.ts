@@ -12,6 +12,7 @@ export type PersonProps = {
 	faction?: Faction;
 	doTick?: boolean;
 	name?: string;
+	sprite?: string;
 };
 
 export default abstract class Person {
@@ -38,10 +39,12 @@ export default abstract class Person {
 	type = 'Sprite';
 	attackAccumulator = 1;
 	doTick = true;
-	abstract sprite: string;
+	sprite: string;
 	abstract weapon: typeof Projectile;
 
-	constructor({ coordinates, doTick, name }: PersonProps) {
+	// TODO: May not need `doTick` here, was originally intended to disable tick on client-side stuff
+	constructor({ coordinates, doTick, name, sprite }: PersonProps) {
+		if (sprite) this.sprite = sprite;
 		if (typeof doTick !== 'undefined') this.doTick = doTick;
 		this.respawnPosition = coordinates;
 		this.x = coordinates.x;

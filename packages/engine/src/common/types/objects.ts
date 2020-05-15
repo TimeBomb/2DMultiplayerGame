@@ -1,4 +1,4 @@
-import { WeightedObject } from '../../aibehavior/BehaviorWeights';
+import BaseAI from '../entities/ai/baseAI';
 
 export enum EntityType {
 	PERSON = 1,
@@ -22,7 +22,7 @@ export interface GameObject {
 
 // TODO: AIGameObject and CollideableGameObject may not be right name for this
 export interface AIGameObject extends GameObject {
-	updateTarget: (weightedTargets: WeightedObject[]) => void;
+	ai: BaseAI;
 	weighTargets: (targets: CollideableGameObject[]) => void;
 }
 

@@ -1,33 +1,51 @@
-import Person from './person';
-import { CollideableGameObject } from '../../types/objects';
+import Person, { PersonProps } from './person';
+import { CollideableGameObject, Faction } from '../../types/objects';
 import { BehaviorWeights, WeightedObject } from '../../../aibehavior/BehaviorWeights';
 import AggroObject from '../../../aibehavior/AggroObject';
-import BehaviorRule from '../../../aibehavior/BehaviorRule';
 import EngineState from '../../../EngineState';
+import BaseAI, { IBaseAI } from '../ai/baseAI';
+import Fireball from '../../projectiles/fireball';
 
-export default abstract class AI extends Person {
+interface AIProps extends PersonProps {
+	faction: Faction;
+	ai: BaseAI;
+}
+
+// TODO: Make more values configurable, set appropriate defaults
+export default class AI extends Person {
 	aiBehaviors: BehaviorWeights;
 	currentTarget: WeightedObject;
 	aggroObj: AggroObject;
-	aggroRange: number;
-	initialized = false;
-	attentionSpan = 0;
+	aggroRange = 1000;
+	initializedAi = false;
+	attentionSpan = 1200;
 	currentAttentionSpan = 0;
+	ai: BaseAI;
+	faction = Faction.ENEMY;
+	width = 32;
+	height = 32;
+	initialHealth = 5000;
+	health = 5000;
+	movementSpeed = 20;
+	weapon = Fireball;
 
-	abstract aiUpdate({ xDiff, yDiff });
+	constructor(ai: IBaseAI, { sprite, ...personProps }: PersonProps & { sprite: string }) {
+		super({ sprite, ...personProps });
+		this.ai = new ai(this);
+	}
 
-	initialize() {
+	initializeAi() {
 		this.aggroObj = new AggroObject({
 			owner: this,
 			aggroRange: this.aggroRange,
 			maxAggroRange: this.aggroRange * 2,
 		});
 		EngineState.world.addGameObject(this.aggroObj);
-		this.initialized = true;
+		this.initializedAi = true;
 	}
 
 	update({ xDiff, yDiff }) {
-		if (!this.initialized) this.initialize();
+		if (!this.initializedAi) this.initializeAi();
 
 		// If no target, we can trigger attention span recheck immediately
 		if (!this.currentTarget) this.currentAttentionSpan = this.attentionSpan;
@@ -37,12 +55,8 @@ export default abstract class AI extends Person {
 			this.currentAttentionSpan += EngineState.timeStep.frameTimeMS;
 		}
 
-		this.aiUpdate({ xDiff, yDiff });
+		this.ai.aiUpdate();
 	}
-
-	abstract getBehaviorRules(target: CollideableGameObject): BehaviorRule[];
-
-	abstract updateTarget(weightedTargets: WeightedObject[]);
 
 	setPosition(x, y) {
 		this.x = x;
@@ -57,7 +71,7 @@ export default abstract class AI extends Person {
 		if (this.currentAttentionSpan >= this.attentionSpan) {
 			this.currentAttentionSpan = 0;
 			const weightedTargets: WeightedObject[] = targets.map((target) => {
-				const rules = this.getBehaviorRules(target);
+				const rules = this.ai.getBehaviorRules();
 				const targetWeights: BehaviorWeights = {};
 
 				rules.forEach((rule) => {
@@ -73,7 +87,7 @@ export default abstract class AI extends Person {
 			if (!weightedTargets.length) {
 				this.currentTarget = null;
 			} else {
-				this.updateTarget(weightedTargets);
+				this.ai.updateTarget(weightedTargets);
 			}
 		}
 	}
