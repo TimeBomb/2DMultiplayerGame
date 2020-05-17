@@ -1,10 +1,10 @@
 import EngineState from '../EngineState';
 import { EventType } from '../common/types/events';
-import { spawns, enemies } from './enemySpawns';
+import { spawns } from './npcSpawns';
 
 export default class GameEntitySpawnHandler {
 	constructor() {
-		EngineState.eventBus.listen(EventType.LONG_TICK, this.respawnTick);
+		EngineState.eventBus.listen(EventType.ENGINE_LONG_TICK, this.respawnTick);
 		this.initializeSpawns();
 	}
 
@@ -17,11 +17,8 @@ export default class GameEntitySpawnHandler {
 	}
 
 	initializeSpawns() {
-		Object.keys(spawns).forEach((spawnType) => {
-			const spawnCoords = spawns[spawnType];
-			spawnCoords.forEach((coords) => {
-				EngineState.world.addGameObject(new enemies[spawnType]({ coordinates: coords }));
-			});
+		spawns.forEach((spawn) => {
+			EngineState.world.addGameObject(spawn.type(spawn.options));
 		});
 	}
 }

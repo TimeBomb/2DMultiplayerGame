@@ -13,7 +13,7 @@ export class GameEvent {
 export type PlayerEvent = {
 	timestamp: number;
 	name: string;
-	type: EventType.NETWORK_PLAYER_UPDATE;
+	type: EventType.NETWORK_PERSON_UPDATE;
 	mousePos?: Coords;
 	primaryActionPressed?: 0 | 1;
 	movingUp?: 0 | 1;
@@ -44,16 +44,17 @@ export enum EventType {
 	// Player-triggered events
 	ACTION_PRIMARY_DOWN = 'action/primary_down', // i.e. Left click down
 	ACTION_PRIMARY_UP = 'action/primary_up', // i.e. Left click up
-	ACTION_MOVE = 'action/player_move', // Called when player presses movement key up or down, with `direction` and `pressed` properties
-	ACTION_WINDOW_BLUR = 'action/window_blur', // i.e. blur window
+	ACTION_MOVE = 'action/move', // Called when player presses movement key up or down, with `direction` and `pressed` properties
+	ACTION_STOP_MOVE = 'action/stop_move', // i.e. blur window
 	ACTION_MOUSE_MOVE = 'action/mouse_move', // i.e. mouse move
 
 	// Networking events
+	NETWORK_PERSON_DEAD = 'network/person_dead', // Triggered by server engine and sent to client on person death
+	NETWORK_PERSON_SPAWN = ' network/person_spawn', // Triggered by server engine and sent to client on person initial spawn & respawn
 	NETWORK_TICK = 'network/tick', // This triggers us to send events to the server
 	NETWORK_LOGIN = 'network/login', // This is passed by the client to the server when a user starts the game up on their end
-	NETWORK_UPDATE_ENTITY = 'network/update_entity', // This is passed by the server to the client to update game object state
 	NETWORK_BUTTON_PRESS = 'network/button_press', // This is passed by the client to the server whenever the player presses an action key
-	NETWORK_PLAYER_UPDATE = 'network/player_update', // This is passed by the client to the server every network tick, containing data on what the player is pressing
+	NETWORK_PERSON_UPDATE = 'network/person_update', // This is passed by the client -> server and serevr -> client every network tick, containing data on what buttons persons are pressing
 	NETWORK_LOGIN_FAILURE = 'network/login_failure', // This is passed by the server if the login is rejected
 	NETWORK_LOGIN_SUCCESS = 'network/login_success', // This is passed by the server if the login is accepted, contains info on the user so we can render them
 }

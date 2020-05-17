@@ -1,0 +1,22 @@
+Melee: Should still be projectile, just shorter ranged different animation
+Gear: Each piece of gear should support having a skill type being placed in it, and having gems
+Skills: Should level up based on usage of the skill. Some skills should be relatively common
+    drops, some should be rarer.
+Gems: Each gem should support leveling up based on taking/dealing damage for armor/weapons.
+    Should give small stat boosts that are slightly boosted when leveled up.
+Crafting: Should be able to mine/etc to get materials, leveling up the more you do it.
+    More levels = Can mine faster. Some materials will be soft-gated by extremely long mine times until
+        you reach certain level.
+    Gear can be crafted using materials you find. Will have slightly higher base stats,
+        maybe some unique stats/slots for certain types of gear materials, more gem slots
+Unsocketing: Can pay fee and materials to remove gem or skill from gear
+Fusing: Can fuse similar gems together to pass on part of gem experience to higher level gem, and to sell gems/skills
+- No mana, just skill cooldowns and cast times
+- To avoid hybrid builds being really strong, gear for different build types can:
+    1) Have set bonuses that are better if you have the full set
+    2) If this^ isn't enough, skills and/or gear can be stronger for each piece of the same type of gear there is
+- Need to think about how economy should look liek around crafting, gear/skill selling,
+    and items NPC sells [maybe semi-randomized / limited stock / difficult to find randomly spawned trading vendors]
+- Eventing system: Mini events throughout certain parts of the map where NPCs spawn in higher 
+    quantities that give higher rewards, or something like that? Maybe they can take over towns
+    or vendor areas? Need to think a lot more on this.

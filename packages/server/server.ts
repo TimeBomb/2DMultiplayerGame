@@ -15,6 +15,7 @@ import {
 	EXPRESS_PORT,
 	SESSION_EXPIRATION_TIME,
 } from './config';
+import ServerEngine from '../engine/src/server/ServerEngine';
 
 // TODO:
 // Engine [for client] needs to support adding and updating entites by name
@@ -43,16 +44,33 @@ import {
 // current timestamp in client, in should set position of object to X,Y
 // See KingCosmic example in discord
 
+// TODO: New file should handle spawning enemies
+// Another file should handle configuring types of enemies, so we can just
+//  provide single var for instant config of enemy type
+// Player positions need to be saved
+
+// After server is in a comfortable position, need to get a UI up maybe with Preact,
+// Preact UI can leverage global window state object that gets data set based on websocket info
+// After that, should probably dive into basic equipment support
+// Eventually loot and gathering...
+
+// TODO Eventually: Change network tick rate from 60 to 30.
+// Every two ticks of the client, send both ticks to the server
+
+// TODO: Any way to add some sort of encryption to server and client for websocket data?
+
 export default class Server {
 	app: Express;
 	server: http.Server;
 	wss: WebSocket.Server;
 	sockets: Map<string, WebSocket>;
 	googleClient: any;
+	serverEngine: ServerEngine;
 
 	constructor() {
 		this.app = express();
 		this.sockets = new Map();
+		this.serverEngine = new ServerEngine();
 
 		this.app.use(express.static(resolve(__dirname, '../web/public')));
 		this.app.use(cookieParser());

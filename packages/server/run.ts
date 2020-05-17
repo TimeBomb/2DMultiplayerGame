@@ -1,5 +1,5 @@
 import Server from './server';
 import WebsocketServer from './websocket/websocketServer';
 
-new Server();
-new WebsocketServer();
+const server = new Server();
+new WebsocketServer(server.engineState);

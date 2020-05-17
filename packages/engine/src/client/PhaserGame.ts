@@ -2,8 +2,6 @@ import Phaser from 'phaser';
 import EngineState from '../EngineState';
 import ClientState from './ClientState';
 import Player from '../common/entities/base/player';
-import AI from '../common/entities/base/ai';
-import SimpleAI from '../common/entities/ai/simple';
 
 export default class PhaserGame {
 	gameInstance: Phaser.Game;
@@ -71,11 +69,6 @@ export default class PhaserGame {
 		ClientState.projectileRenderer.initialize(scene);
 		ClientState.player.initializeScene(scene);
 		ClientState.player.loadPlayer();
-
-		// TODO: REMOVE THIS, only for testing
-		EngineState.world.addGameObject(
-			new AI(SimpleAI, { coordinates: { x: 1100, y: 1100 }, sprite: 'enemy' }),
-		);
 
 		// Initialize camera
 		scene.cameras.main.zoom = 0.6;

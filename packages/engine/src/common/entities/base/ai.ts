@@ -6,12 +6,17 @@ import EngineState from '../../../EngineState';
 import BaseAI, { IBaseAI } from '../ai/baseAI';
 import Fireball from '../../projectiles/fireball';
 
-interface AIProps extends PersonProps {
-	faction: Faction;
-	ai: BaseAI;
+interface AIProps {
+	width?: number;
+	height?: number;
+	maxHealth: number;
+	aggroRange?: number;
+	attentionSpan?: number;
 }
 
-// TODO: Make more values configurable, set appropriate defaults
+// TODO: This needs to emulate player action events, so we can send the events from the server to the client
+// Will still need to check specific coords and resync where appropriate, but
+// sending simulated inputs of AI makes sense
 export default class AI extends Person {
 	aiBehaviors: BehaviorWeights;
 	currentTarget: WeightedObject;
@@ -24,13 +29,21 @@ export default class AI extends Person {
 	faction = Faction.ENEMY;
 	width = 32;
 	height = 32;
-	initialHealth = 5000;
-	health = 5000;
+	maxHealth = 5000;
+	health;
 	movementSpeed = 20;
 	weapon = Fireball;
 
-	constructor(ai: IBaseAI, { sprite, ...personProps }: PersonProps & { sprite: string }) {
-		super({ sprite, ...personProps });
+	constructor(ai: IBaseAI, props: PersonProps & AIProps) {
+		super(props);
+
+		const setProp = (prop) => {
+			if (props[prop]) {
+				this[prop] = props[prop];
+			}
+		};
+		['width', 'height', 'maxHealth', 'aggroRange', 'attentionSpan'].forEach(setProp);
+
 		this.ai = new ai(this);
 	}
 

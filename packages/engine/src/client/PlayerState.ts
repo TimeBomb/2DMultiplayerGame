@@ -24,7 +24,10 @@ export default class PlayerState {
 	}
 
 	loadPlayer() {
-		const player = new Player({ coordinates: { x: this.user.x, y: this.user.y } });
+		const player = new Player({
+			coordinates: { x: this.user.x, y: this.user.y },
+			name: this.user.id,
+		});
 		EngineState.world.addGameObject(player);
 
 		this.phaserInstance = ClientState.personRenderer.persons[player.name];
@@ -38,37 +41,37 @@ export default class PlayerState {
 		controls.addKey({
 			key: 'W',
 			onKeydown: () => {
-				ClientState.player.engineInstance.handlePlayerMove(Directions.Forward, true);
+				ClientState.player.engineInstance.handleMove(Directions.Forward, true);
 			},
 			onKeyup: () => {
-				ClientState.player.engineInstance.handlePlayerMove(Directions.Forward, false);
+				ClientState.player.engineInstance.handleMove(Directions.Forward, false);
 			},
 		});
 		controls.addKey({
 			key: 'S',
 			onKeydown: () => {
-				ClientState.player.engineInstance.handlePlayerMove(Directions.Backward, true);
+				ClientState.player.engineInstance.handleMove(Directions.Backward, true);
 			},
 			onKeyup: () => {
-				ClientState.player.engineInstance.handlePlayerMove(Directions.Backward, false);
+				ClientState.player.engineInstance.handleMove(Directions.Backward, false);
 			},
 		});
 		controls.addKey({
 			key: 'A',
 			onKeydown: () => {
-				ClientState.player.engineInstance.handlePlayerMove(Directions.Left, true);
+				ClientState.player.engineInstance.handleMove(Directions.Left, true);
 			},
 			onKeyup: () => {
-				ClientState.player.engineInstance.handlePlayerMove(Directions.Left, false);
+				ClientState.player.engineInstance.handleMove(Directions.Left, false);
 			},
 		});
 		controls.addKey({
 			key: 'D',
 			onKeydown: () => {
-				ClientState.player.engineInstance.handlePlayerMove(Directions.Right, true);
+				ClientState.player.engineInstance.handleMove(Directions.Right, true);
 			},
 			onKeyup: () => {
-				ClientState.player.engineInstance.handlePlayerMove(Directions.Right, false);
+				ClientState.player.engineInstance.handleMove(Directions.Right, false);
 			},
 		});
 
@@ -81,7 +84,10 @@ export default class PlayerState {
 		});
 
 		this.scene.input.on('pointermove', (pointer) => {
-			ClientState.player.engineInstance.handlePointerMove(pointer.worldX, pointer.worldY);
+			ClientState.player.engineInstance.handlePointerMove({
+				x: pointer.worldX,
+				y: pointer.worldY,
+			});
 		});
 
 		window.addEventListener('blur', () => {

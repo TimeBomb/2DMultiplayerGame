@@ -2,10 +2,13 @@ import WebSocket from 'ws';
 
 import WebSocketHandler from './websocketHandler';
 import { WEBSOCKET_PORT } from '../config';
+import ServerEngine from '../../engine/src/server/ServerEngine';
 
 export default class WebsocketServer {
 	wss: WebSocket.Server;
-	constructor() {
+	serverEngine: ServerEngine;
+
+	constructor(serverEngine: ServerEngine) {
 		this.wss = new WebSocket.Server({
 			clientTracking: false,
 			noServer: true,
@@ -21,13 +24,14 @@ export default class WebsocketServer {
 				},
 			},
 		});
+		this.serverEngine = serverEngine;
 
 		this.instantiateHandlers();
 	}
 
 	instantiateHandlers() {
 		this.wss.on('connection', (ws) => {
-			const wsHandler = new WebSocketHandler(ws);
+			const wsHandler = new WebSocketHandler(ws, this.serverEngine);
 
 			ws.on('message', wsHandler.socketMessageHandler.bind(wsHandler));
 

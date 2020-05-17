@@ -1,7 +1,7 @@
 import { GameEvent, EventType } from '../common/types/events';
 import { serialize, deserialize } from '../helpers/serializer';
 import EngineState from '../EngineState';
-import PlayerNetworkState from './PlayerNetworkState';
+import PersonNetworkState from './PersonNetworkState';
 import ClientState from './ClientState';
 
 // TODO: Send Ping/pong events to/from server/client, disconnect if nothing received, also acts as keep alive
@@ -10,7 +10,7 @@ export default class WebSocketHandler {
 	ws: WebSocket;
 	connected = false;
 	storedEvents: GameEvent[] = [];
-	playerNetworkState: PlayerNetworkState;
+	PersonNetworkState: PersonNetworkState;
 
 	// The most up to date, unsent player network event
 	// Deleted upon sending out message to the server
@@ -23,7 +23,7 @@ export default class WebSocketHandler {
 	constructor() {
 		this.connect();
 
-		this.playerNetworkState = new PlayerNetworkState();
+		this.PersonNetworkState = new PersonNetworkState();
 		EngineState.eventBus.listen(EventType.NETWORK_TICK, this.sendMessages.bind(this));
 		EngineState.eventBus.listen(EventType.ENGINE_TICK, this.handlePlayerEvent.bind(this));
 	}
@@ -85,7 +85,7 @@ export default class WebSocketHandler {
 
 	// Every tick, grab changes in player network state and update event to send
 	handlePlayerEvent(event: GameEvent) {
-		const playerEvent = this.playerNetworkState.toEvent(this.lastPlayerNetworkEvent);
+		const playerEvent = this.PersonNetworkState.toEvent(this.lastPlayerNetworkEvent);
 		if (playerEvent) {
 			// Combine the last network event and this one, so we can
 			// pass all the latest props to `toEvent` above when checking if things have changed

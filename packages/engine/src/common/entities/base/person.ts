@@ -27,7 +27,7 @@ export default abstract class Person {
 	respawnTime = 3000;
 	abstract movementSpeed: number;
 	health = 0;
-	abstract initialHealth: number;
+	abstract maxHealth: number;
 	rotation: number;
 	isHittable = true;
 	respawnPosition: Coords;
@@ -49,11 +49,35 @@ export default abstract class Person {
 		this.respawnPosition = coordinates;
 		this.x = coordinates.x;
 		this.y = coordinates.y;
-		if (!name) this.name = Uuid();
+		this.name = name || Uuid();
+
 		EngineState.eventBus.listen(EventType.ENGINE_TICK, this.tick.bind(this));
+		EngineState.eventBus.listen(
+			EventType.NETWORK_PERSON_UPDATE,
+			this.handlePersonUpdate.bind(this),
+			this.name,
+		);
 	}
 
 	abstract update({ xDiff, yDiff }: { xDiff: number; yDiff: number }): void;
+
+	handlePersonUpdate(event: GameEvent) {
+		const {
+			primaryActionPressed,
+			movingUp,
+			movingDown,
+			movingLeft,
+			movingRight,
+			mousePos,
+		} = event.payload;
+
+		primaryActionPressed ? this.onMouseDown() : this.onMouseUp();
+		this.toggleMovementDirection(Directions.Forward, movingUp);
+		this.toggleMovementDirection(Directions.Left, movingLeft);
+		this.toggleMovementDirection(Directions.Backward, movingDown);
+		this.toggleMovementDirection(Directions.Right, movingRight);
+		this.updateTargetCoords(mousePos.x, mousePos.y);
+	}
 
 	toggleMovementDirection(direction: Directions, toggleOn: boolean) {
 		if (this.isDead) return;
@@ -195,7 +219,7 @@ export default abstract class Person {
 	}
 
 	respawn() {
-		this.health = this.initialHealth;
+		this.health = this.maxHealth;
 		this.isDead = false;
 		this.setPosition(this.respawnPosition.x, this.respawnPosition.y);
 		EngineState.eventBus.dispatch(
@@ -246,6 +270,8 @@ export default abstract class Person {
 		const hasCollided = EngineState.world.checkWorldCollisionByObject(objRect);
 		return hasCollided;
 	}
+
+	// TODO: May not need this method to exist since it's so simple
 	updateTargetCoords(x, y) {
 		this.targetCoords = { x, y };
 	}
@@ -263,5 +289,92 @@ export default abstract class Person {
 
 	setActive(active: boolean) {
 		this.active = active;
+	}
+
+	onMouseUp() {
+		this.isAttacking = false;
+	}
+
+	onMouseDown() {
+		this.isAttacking = true;
+	}
+
+	onStopMovement() {
+		this.movementDirections.clear();
+	}
+
+	onPointerMove(coords: Coords) {
+		const x = Math.round(coords.x);
+		const y = Math.round(coords.y);
+		this.targetCoords = { x, y };
+	}
+
+	onMove(direction, toggledOn) {
+		this.toggleMovementDirection(direction, toggledOn);
+	}
+
+	handleMouseUp() {
+		this.onMouseUp();
+		EngineState.eventBus.dispatch(
+			new GameEvent(EventType.ACTION_PRIMARY_UP, { name: this.name }),
+		);
+	}
+
+	handleMouseDown() {
+		EngineState.eventBus.dispatch(
+			new GameEvent(EventType.ACTION_PRIMARY_DOWN, { name: this.name }),
+		);
+	}
+
+	handleStopMovement() {
+		this.onStopMovement();
+		EngineState.eventBus.dispatch(
+			new GameEvent(EventType.ACTION_STOP_MOVE, { name: this.name }),
+		);
+	}
+
+	handlePointerMove(coords: Coords) {
+		this.onPointerMove(coords);
+		EngineState.eventBus.dispatch(
+			new GameEvent(EventType.ACTION_MOUSE_MOVE, { coords, name: this.name }),
+		);
+	}
+
+	handleMove(direction: Directions, toggledOn: boolean) {
+		this.onMove(direction, toggledOn);
+		EngineState.eventBus.dispatch(
+			new GameEvent(EventType.ACTION_MOVE, { direction, pressed: toggledOn }),
+		);
+	}
+
+	// Updates actions in response to server message
+	updateActions(event: GameEvent) {
+		if (event.payload.name !== this.name) return;
+
+		const {
+			mousePos,
+			primaryActionPressed,
+			movingUp,
+			movingDown,
+			movingLeft,
+			movingRight,
+		} = event.payload;
+
+		if (mousePos) {
+			this.updateTargetCoords(Math.round(mousePos.x), Math.round(mousePos.y));
+		}
+
+		if (typeof primaryActionPressed !== 'undefined') {
+			this.isAttacking = primaryActionPressed === 1 ? true : false;
+		}
+
+		if (typeof movingUp !== 'undefined')
+			this.toggleMovementDirection(Directions.Forward, movingUp === 1 ? true : false);
+		if (typeof movingDown !== 'undefined')
+			this.toggleMovementDirection(Directions.Backward, movingDown === 1 ? true : false);
+		if (typeof movingLeft !== 'undefined')
+			this.toggleMovementDirection(Directions.Left, movingLeft === 1 ? true : false);
+		if (typeof movingRight !== 'undefined')
+			this.toggleMovementDirection(Directions.Right, movingRight === 1 ? true : false);
 	}
 }

@@ -4,6 +4,7 @@ import databaseClient from './databaseClient';
 import { Uuid } from '../engine/src/helpers/misc';
 import { SESSION_EXPIRATION_TIME } from './config';
 
+// TODO: We need to set initial health here to whatever new player max health will be
 const NEW_USER = {
 	x: 600,
 	y: 600,
