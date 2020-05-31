@@ -1,5 +1,5 @@
 import { CollideableGameObject, AIGameObject, Faction, EntityType } from '../common/types/objects';
-import { Uuid } from '../helpers/misc';
+import { nanoid } from 'nanoid';
 
 type AggroObjectProps = {
 	owner: AIGameObject;
@@ -29,7 +29,7 @@ export default class AggroObject {
 	// The passed aggro range is how far away from the enemy someone has to be to aggro it,
 	// i.e. the radius of the circle is the range
 	constructor({ owner, aggroRange }: AggroObjectProps) {
-		this.name = Uuid();
+		this.name = nanoid();
 		this.width = aggroRange * 2;
 		this.height = aggroRange * 2;
 		this.radius = aggroRange;

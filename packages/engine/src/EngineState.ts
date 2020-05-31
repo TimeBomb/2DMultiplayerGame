@@ -8,6 +8,7 @@ const LONG_TICK_MS = 250;
 
 export default (function () {
 	return {
+		engineType: null, // Set when client/server engine is initd
 		timeStep: new TimeStep({ fps: FPS, longTickMS: LONG_TICK_MS }),
 		eventBus: new EventBus(),
 		world: new World(),

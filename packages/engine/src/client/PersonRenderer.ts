@@ -23,14 +23,17 @@ export default class PersonRenderer {
 		}
 
 		EngineState.eventBus.listen(EventType.ENGINE_GAME_OBJECT_ADDED, rebind(this.addPerson));
-		EngineState.eventBus.listen(EventType.ENGINE_UPDATE_PERSON, rebind(this.updatePerson));
+		EngineState.eventBus.listen(
+			EventType.ENGINE_UPDATE_PERSON_POSITION,
+			rebind(this.updatePerson),
+		);
 		EngineState.eventBus.listen(EventType.ENGINE_PERSON_DEAD, rebind(this.killPerson));
 
 		this.scene = scene;
 	}
 
 	addPerson(event) {
-		if (event.entityType !== EntityType.PERSON) return;
+		if (event.entityType !== EntityType.PLAYER && event.entityType !== EntityType.AI) return;
 
 		const sprite = new GameObjects.Sprite(this.scene, event.x, event.y, event.sprite);
 		sprite.setScale(1.5, 1.5);

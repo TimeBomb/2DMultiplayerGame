@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
 
-import WebSocketHandler from './websocketHandler';
+import ServerSocketHandler from './ServerSocketHandler';
 import { WEBSOCKET_PORT } from '../config';
 import ServerEngine from '../../engine/src/server/ServerEngine';
 
@@ -31,7 +31,7 @@ export default class WebsocketServer {
 
 	instantiateHandlers() {
 		this.wss.on('connection', (ws) => {
-			const wsHandler = new WebSocketHandler(ws, this.serverEngine);
+			const wsHandler = new ServerSocketHandler(ws, this.serverEngine);
 
 			ws.on('message', wsHandler.socketMessageHandler.bind(wsHandler));
 

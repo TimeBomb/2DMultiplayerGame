@@ -88,7 +88,7 @@ export default class PersonNetworkState {
 		});
 
 		if (Object.keys(eventPayload).length > 0) {
-			return new GameEvent(EventType.NETWORK_PERSON_UPDATE, {
+			return new GameEvent(EventType.NETWORK_UPDATE_PERSON_ACTIONS, {
 				...eventPayload,
 				name: this.name,
 				timestamp: Date.now(),

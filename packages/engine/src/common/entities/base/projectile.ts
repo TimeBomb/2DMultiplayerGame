@@ -1,8 +1,32 @@
-import { Uuid } from '../../helpers/misc';
-import EngineState from '../../EngineState';
-import { CollideableGameObject, WeaponModifiers, EntityType, Faction } from '../types/objects';
-import { GameEvent, EventType } from '../types/events';
-import { Coords } from '../types/world';
+import EngineState from '../../../EngineState';
+import { CollideableGameObject, WeaponModifiers, EntityType, Faction } from '../../types/objects';
+import { GameEvent, EventType } from '../../types/events';
+import { Coords } from '../../types/world';
+import { ProjectileType } from '../../projectileTypes';
+import { nanoid } from 'nanoid';
+
+export type EngineProjectileProps = {
+	ownerName: string;
+	ownerFaction: Faction;
+	modifiers?: WeaponModifiers;
+	attackerCoords: Coords;
+	targetCoords: Coords;
+	attackerSize: { width: number; height: number };
+	born?: number;
+	doTick?: boolean;
+	name?: string;
+};
+type ProjectileTypeProps = {
+	width: number;
+	height: number;
+	xSpeed: number;
+	ySpeed: number;
+	bulletLifetime: number;
+	damage: number;
+	sprite: string;
+};
+
+type ProjectileProps = EngineProjectileProps & ProjectileTypeProps;
 
 export default class Projectile {
 	x = 0;
@@ -28,31 +52,46 @@ export default class Projectile {
 	targetCoords: Coords;
 	sprite: string;
 	doTick = true;
+	projectileType: ProjectileType;
 
-	constructor({
-		ownerName,
-		ownerFaction,
-		modifiers,
-		attackerCoords,
-		targetCoords,
-		attackerSize,
-		doTick,
-	}: {
-		ownerName: string;
-		ownerFaction: Faction;
-		modifiers?: WeaponModifiers;
-		attackerCoords: Coords;
-		targetCoords: Coords;
-		attackerSize: { width: number; height: number };
-		doTick?: boolean;
-	}) {
-		this.name = Uuid();
+	constructor(
+		projectileType: ProjectileType,
+		{
+			name,
+			ownerName,
+			ownerFaction,
+			modifiers,
+			attackerCoords,
+			targetCoords,
+			attackerSize,
+			doTick,
+			width,
+			height,
+			xSpeed,
+			ySpeed,
+			bulletLifetime,
+			damage,
+			sprite,
+			born,
+		}: ProjectileProps,
+	) {
+		this.projectileType = projectileType;
+		this.name = name || nanoid();
 		this.ownerName = ownerName;
 		this.faction = ownerFaction;
 		this.modifiers = modifiers;
 		this.attackerCoords = attackerCoords;
 		this.targetCoords = targetCoords;
 		this.attackerSize = attackerSize;
+		this.width = width;
+		this.height = height;
+		this.xSpeed = xSpeed;
+		this.ySpeed = ySpeed;
+		this.bulletLifetime = bulletLifetime;
+		this.damage = damage;
+		this.sprite = sprite;
+		if (typeof this.born !== 'undefined') this.born = born;
+
 		if (typeof doTick !== 'undefined') this.doTick = doTick;
 
 		EngineState.eventBus.listen(EventType.ENGINE_TICK, this.tick.bind(this));

@@ -1,10 +1,11 @@
 import Person, { PersonProps } from './person';
-import { CollideableGameObject, Faction } from '../../types/objects';
+import { CollideableGameObject, Faction, EntityType } from '../../types/objects';
 import { BehaviorWeights, WeightedObject } from '../../../aibehavior/BehaviorWeights';
 import AggroObject from '../../../aibehavior/AggroObject';
 import EngineState from '../../../EngineState';
 import BaseAI, { IBaseAI } from '../ai/baseAI';
-import Fireball from '../../projectiles/fireball';
+import ProjectileTypes, { ProjectileType } from '../../projectileTypes';
+import { AIType } from '../../aiTypes';
 
 interface AIProps {
 	width?: number;
@@ -32,10 +33,13 @@ export default class AI extends Person {
 	maxHealth = 5000;
 	health;
 	movementSpeed = 20;
-	weapon = Fireball;
+	weapon = ProjectileTypes[ProjectileType.Fireball];
+	entityType = EntityType.AI;
+	aiType: AIType;
 
-	constructor(ai: IBaseAI, props: PersonProps & AIProps) {
+	constructor(aiType: AIType, ai: IBaseAI, props: PersonProps & AIProps) {
 		super(props);
+		this.aiType = aiType;
 
 		const setProp = (prop) => {
 			if (props[prop]) {

@@ -7,12 +7,12 @@ import gameEventReceiver from './GameEventReceiver';
 import gameEventSender from './GameEventSender';
 import ServerEngine from '../../engine/src/server/ServerEngine';
 
-const MAX_EVENT_SIZE = 1000;
+const MAX_EVENT_SIZE = 1000; // string size, effectively bytes or close to it
 const DEBUG = process.argv[2] === '-d';
-// TODO: Rename class to diff then engine
-export default class WebSocketHandler {
+
+export default class ServerSocketHandler {
 	ws: WebSocket;
-	id: string;
+	id: string; // id is used to ensure we only handle events coming from the user if they are for the current user's ID
 	serverEngine: ServerEngine;
 
 	constructor(websocket: WebSocket, serverEngine: ServerEngine) {
@@ -36,12 +36,17 @@ export default class WebSocketHandler {
 
 		try {
 			const data = deserialize(event);
-			const gameEvents = data.map((eventChunk) => {
-				const eventType = eventChunk.type;
-				delete eventChunk.type;
-				return new GameEvent(eventType, eventChunk.payload);
-			});
-			gameEvents.forEach((gameEvent) => gameEventReceiver(this, gameEvent));
+			const gameEvents = data
+				.map((eventChunk) => {
+					const eventType = eventChunk.type;
+
+					delete eventChunk.type;
+					return new GameEvent(eventType, eventChunk.payload);
+				})
+				.filter((event) => event !== null);
+			gameEvents.forEach((gameEvent) =>
+				gameEventReceiver(this, gameEvent, this.serverEngine),
+			);
 		} catch (e) {
 			if (DEBUG) console.error('problem handling message', e);
 		}

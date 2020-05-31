@@ -6,7 +6,7 @@ import ClientState from './ClientState';
 
 // TODO: Send Ping/pong events to/from server/client, disconnect if nothing received, also acts as keep alive
 const URL = 'ws://localhost:8123';
-export default class WebSocketHandler {
+export default class ClientSocketHandler {
 	ws: WebSocket;
 	connected = false;
 	storedEvents: GameEvent[] = [];

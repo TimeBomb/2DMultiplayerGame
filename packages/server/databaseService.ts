@@ -1,7 +1,7 @@
 import { promisify } from 'util';
+import { v4 } from 'uuid';
 
 import databaseClient from './databaseClient';
-import { Uuid } from '../engine/src/helpers/misc';
 import { SESSION_EXPIRATION_TIME } from './config';
 
 // TODO: We need to set initial health here to whatever new player max health will be
@@ -19,7 +19,7 @@ export function getUserIdByGoogleId(googleId) {
 }
 
 export async function registerWithGoogleId(googleId) {
-	const userId = Uuid();
+	const userId = v4();
 	await set(`user-${userId}`, JSON.stringify(NEW_USER));
 	await set(`userIdFromGoogleId-${googleId}`, userId);
 }

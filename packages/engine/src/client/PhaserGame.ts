@@ -68,7 +68,7 @@ export default class PhaserGame {
 		ClientState.personRenderer.initialize(scene);
 		ClientState.projectileRenderer.initialize(scene);
 		ClientState.player.initializeScene(scene);
-		ClientState.player.loadPlayer();
+		ClientState.player.initializePlayer();
 
 		// Initialize camera
 		scene.cameras.main.zoom = 0.6;

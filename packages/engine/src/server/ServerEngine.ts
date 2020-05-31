@@ -7,6 +7,7 @@ import { EngineType } from '../common/types/engine';
 // TODO Somehow dispatch events - what needs to be dispatched? Maybe all events coming through eventbus?
 export default class ServerEngine {
 	engineState: typeof EngineState;
+
 	constructor() {
 		EngineState.engineType = EngineType.SERVER;
 		EngineState.world.initialize();

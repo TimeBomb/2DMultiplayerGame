@@ -6,6 +6,10 @@ import ClientState from './ClientState';
 import { Directions } from '../helpers/constants';
 import GameControls from './GameControls';
 import { GameEvent } from '../common/types/events';
+import { EntityType } from '../common/types/objects';
+import aiTypes from '../common/aiTypes';
+import playerTypes from '../common/playerTypes';
+import projectileTypes from '../common/projectileTypes';
 
 // TODO: Move logout on login failure to somewhere more appropriate
 // TODO: Test that login success/failure events are being handled appropriately
@@ -19,15 +23,39 @@ export default class PlayerState {
 		this.scene = scene;
 	}
 
+	// TODO Finish spawn stuff here
 	initializeOnLogin(loginEvent: GameEvent) {
-		this.user = loginEvent.payload;
+		const spawns = loginEvent.payload.spawns;
+		this.user = loginEvent.payload.user;
+		spawns.forEach((spawn) => {
+			let gameObj;
+			switch (spawn.entityType) {
+				case EntityType.AI:
+					gameObj = aiTypes[spawn.aiType](spawn);
+					break;
+				case EntityType.PLAYER:
+					gameObj = playerTypes[spawn.playerType](spawn);
+					break;
+				case EntityType.PROJECTILE:
+					gameObj = projectileTypes[spawn.projectileType](spawn);
+					break;
+			}
+			if (gameObj) {
+				EngineState.world.addGameObject(gameObj);
+			}
+		});
+	}
+
+	async initializePlayer() {
+		return new Promise((resolve) => {
+			while (!this.user || !this.scene) {}
+			this.loadPlayer();
+			resolve(true);
+		});
 	}
 
 	loadPlayer() {
-		const player = new Player({
-			coordinates: { x: this.user.x, y: this.user.y },
-			name: this.user.id,
-		});
+		const player = playerTypes[this.user.playerType](this.user);
 		EngineState.world.addGameObject(player);
 
 		this.phaserInstance = ClientState.personRenderer.persons[player.name];

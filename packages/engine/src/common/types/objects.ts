@@ -1,11 +1,17 @@
 import BaseAI from '../entities/ai/baseAI';
+import { AIType } from '../aiTypes';
+import { ProjectileType } from '../projectileTypes';
+import { PlayerType } from '../playerTypes';
+import { Directions } from '../../helpers/constants';
 
 export enum EntityType {
-	PERSON = 1,
+	PLAYER = 1,
 	PROJECTILE,
+	AI,
 	OTHER,
 }
 
+// TODO: We should probably type a lot of these things better...
 export interface GameObject {
 	type: string;
 	active: boolean;
@@ -15,7 +21,15 @@ export interface GameObject {
 	y: number;
 	faction: Faction;
 	sprite: string;
+	health?: number;
+	maxHealth?: number;
 	entityType: EntityType;
+	aiType?: AIType;
+	projectileType?: ProjectileType;
+	playerType?: PlayerType;
+	movementDirections?: Set<Directions>;
+	born?: number;
+	rotation?: number;
 	getBounds: () => Bounds;
 	respawn?: () => void;
 }

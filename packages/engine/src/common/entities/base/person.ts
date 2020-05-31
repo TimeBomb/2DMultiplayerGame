@@ -4,15 +4,18 @@ import { Clamp, AngleBetweenPoints } from '../../../helpers/math';
 import { Coords } from '../../types/world';
 import EngineState from '../../../EngineState';
 import { GameEvent, EventType } from '../../types/events';
-import { Uuid } from '../../../helpers/misc';
-import Projectile from '../../projectiles/projectile';
+import Projectile from './projectile';
+import { nanoid } from 'nanoid';
 
 export type PersonProps = {
 	coordinates: Coords;
 	faction?: Faction;
 	doTick?: boolean;
+	health?: number;
 	name?: string;
 	sprite?: string;
+	movementDirections?: Set<Directions>;
+	rotation?: number;
 };
 
 export default abstract class Person {
@@ -23,7 +26,7 @@ export default abstract class Person {
 	y = 0;
 	abstract height: number;
 	abstract width: number;
-	movementDirections = new Set();
+	movementDirections: Set<Directions> = new Set();
 	respawnTime = 3000;
 	abstract movementSpeed: number;
 	health = 0;
@@ -35,26 +38,53 @@ export default abstract class Person {
 	targetCoords: Coords;
 	abstract faction: Faction;
 	active = true;
-	entityType: EntityType = EntityType.PERSON;
+	abstract entityType: EntityType;
+
 	type = 'Sprite';
 	attackAccumulator = 1;
 	doTick = true;
 	sprite: string;
-	abstract weapon: typeof Projectile;
+	abstract weapon: (EngineProjectileProps) => Projectile;
 
 	// TODO: May not need `doTick` here, was originally intended to disable tick on client-side stuff
-	constructor({ coordinates, doTick, name, sprite }: PersonProps) {
+	constructor({
+		coordinates,
+		doTick,
+		name,
+		sprite,
+		movementDirections,
+		rotation,
+		health,
+	}: PersonProps) {
 		if (sprite) this.sprite = sprite;
 		if (typeof doTick !== 'undefined') this.doTick = doTick;
 		this.respawnPosition = coordinates;
 		this.x = coordinates.x;
 		this.y = coordinates.y;
-		this.name = name || Uuid();
+		if (movementDirections) this.movementDirections = movementDirections;
+		if (typeof rotation !== 'undefined') this.rotation = rotation;
+		if (typeof health !== 'undefined') this.health = health;
+		this.name = name || nanoid();
 
 		EngineState.eventBus.listen(EventType.ENGINE_TICK, this.tick.bind(this));
 		EngineState.eventBus.listen(
-			EventType.NETWORK_PERSON_UPDATE,
+			EventType.NETWORK_UPDATE_PERSON_POSITION,
 			this.handlePersonUpdate.bind(this),
+			this.name,
+		);
+		EngineState.eventBus.listen(
+			EventType.NETWORK_UPDATE_PERSON,
+			this.handlePersonUpdate.bind(this),
+			this.name,
+		);
+		EngineState.eventBus.listen(
+			EventType.NETWORK_PERSON_DEAD,
+			this.onDead.bind(this),
+			this.name,
+		);
+		EngineState.eventBus.listen(
+			EventType.NETWORK_UPDATE_PERSON_ACTIONS,
+			this.handlePersonActionsUpdate.bind(this),
 			this.name,
 		);
 	}
@@ -62,6 +92,31 @@ export default abstract class Person {
 	abstract update({ xDiff, yDiff }: { xDiff: number; yDiff: number }): void;
 
 	handlePersonUpdate(event: GameEvent) {
+		const payload = event.payload;
+		if (
+			typeof payload.x === 'number' ||
+			typeof payload.y === 'number' ||
+			typeof payload.rotation === 'number'
+		) {
+			if (payload.x || payload.y) {
+				this.x = payload.x;
+				this.y = payload.y;
+			}
+			if (payload.rotation) {
+				this.rotation = payload.rotation;
+			}
+
+			EngineState.eventBus.dispatch(
+				new GameEvent(EventType.ENGINE_UPDATE_PERSON_POSITION, payload),
+			);
+		} else {
+			if (typeof payload.health === 'number') {
+				this.health = payload.health;
+			}
+		}
+	}
+
+	handlePersonActionsUpdate(event: GameEvent) {
 		const {
 			primaryActionPressed,
 			movingUp,
@@ -147,20 +202,27 @@ export default abstract class Person {
 			this.rotateToCoords(this.targetCoords);
 		}
 
+		const isPositionChanged = originalX !== this.x || originalY !== this.y;
+		const isRotationChanged = originalRotation !== this.rotation;
+
 		// Shoot off UPDATE_PERSON event
-		const updatePersonEventParams: any = {
-			name: this.name,
-		};
-		if (originalX !== this.x || originalY !== this.y) {
-			updatePersonEventParams.x = this.x;
-			updatePersonEventParams.y = this.y;
+		if (isPositionChanged || isRotationChanged) {
+			const updatePersonEventParams: any = {
+				name: this.name,
+			};
+
+			if (isPositionChanged) {
+				updatePersonEventParams.x = this.x;
+				updatePersonEventParams.y = this.y;
+			}
+			if (isRotationChanged) {
+				updatePersonEventParams.rotation = this.rotation;
+			}
+
+			EngineState.eventBus.dispatch(
+				new GameEvent(EventType.ENGINE_UPDATE_PERSON_POSITION, updatePersonEventParams),
+			);
 		}
-		if (originalRotation !== this.rotation) {
-			updatePersonEventParams.rotation = this.rotation;
-		}
-		EngineState.eventBus.dispatch(
-			new GameEvent(EventType.ENGINE_UPDATE_PERSON, updatePersonEventParams),
-		);
 	}
 
 	validateMove(movementAmount, initialXDiff: number, initialYDiff: number) {
@@ -195,7 +257,7 @@ export default abstract class Person {
 	attack() {
 		if (this.isDead || !this.targetCoords) return;
 
-		const projectile = new this.weapon({
+		const projectile = this.weapon({
 			attackerSize: { width: this.width, height: this.height },
 			attackerCoords: { x: this.x, y: this.y },
 			ownerName: this.name,
@@ -223,11 +285,16 @@ export default abstract class Person {
 		this.isDead = false;
 		this.setPosition(this.respawnPosition.x, this.respawnPosition.y);
 		EngineState.eventBus.dispatch(
-			new GameEvent(EventType.ENGINE_UPDATE_PERSON, {
+			new GameEvent(EventType.ENGINE_UPDATE_PERSON_POSITION, {
 				name: this.name,
 				x: this.x,
 				y: this.y,
-				health: this.health,
+			}),
+		);
+		EngineState.eventBus.dispatch(
+			new GameEvent(EventType.ENGINE_UPDATE_PERSON, {
+				name: this.name,
+				health: this.maxHealth,
 			}),
 		);
 	}
@@ -253,6 +320,13 @@ export default abstract class Person {
 			if (this.health <= 0) {
 				this.health = 0;
 				this.onDead();
+			} else {
+				EngineState.eventBus.dispatch(
+					new GameEvent(EventType.ENGINE_UPDATE_PERSON, {
+						name: this.name,
+						health: this.health,
+					}),
+				);
 			}
 		}
 	}

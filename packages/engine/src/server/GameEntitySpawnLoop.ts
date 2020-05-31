@@ -1,6 +1,7 @@
 import EngineState from '../EngineState';
-import { EventType } from '../common/types/events';
+import { EventType, GameEvent } from '../common/types/events';
 import { spawns } from './npcSpawns';
+import aiTypes from '../common/aiTypes';
 
 export default class GameEntitySpawnHandler {
 	constructor() {
@@ -18,7 +19,8 @@ export default class GameEntitySpawnHandler {
 
 	initializeSpawns() {
 		spawns.forEach((spawn) => {
-			EngineState.world.addGameObject(spawn.type(spawn.options));
+			EngineState.world.addGameObject(aiTypes[spawn.type](spawn.options));
+			EngineState.eventBus.dispatch(new GameEvent(EventType.ENGINE_SPAWN_PERSON, spawn));
 		});
 	}
 }

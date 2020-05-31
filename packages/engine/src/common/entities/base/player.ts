@@ -1,9 +1,10 @@
 import Person, { PersonProps } from './person';
-import { Faction } from '../../types/objects';
+import { Faction, EntityType } from '../../types/objects';
 import { AngleBetweenPoints } from '../../../helpers/math';
-import Fireball from '../../projectiles/fireball';
 import EngineState from '../../../EngineState';
 import { EventType } from '../../types/events';
+import ProjectileTypes, { ProjectileType } from '../../projectileTypes';
+import { PlayerType } from '../../playerTypes';
 
 // TODO: If logic on player button press becomes more complex, make shared between
 // button press methods and updateActions method
@@ -15,13 +16,16 @@ export default class Player extends Person {
 	hitboxHeight = 40;
 	faction = Faction.PLAYER;
 	sprite = 'player';
-	weapon = Fireball;
+	weapon = ProjectileTypes[ProjectileType.Fireball];
 	height = 32;
 	width = 32;
+	entityType = EntityType.PLAYER;
+	playerType: PlayerType;
 
-	constructor(args: PersonProps) {
+	constructor(playerType: PlayerType, args: PersonProps) {
 		super(args);
-		this.health = this.maxHealth;
+		this.playerType = playerType;
+		this.health = typeof this.health === 'undefined' ? this.maxHealth : this.health;
 		EngineState.eventBus.listen(
 			EventType.ENGINE_UPDATE_PERSON_ACTIONS,
 			this.updateActions.bind(this),
