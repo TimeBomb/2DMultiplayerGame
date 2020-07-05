@@ -4,11 +4,14 @@ import {
 	GameObject,
 	AggroGameObject,
 	Bounds,
+	EntityType,
 } from './types/objects';
 import { StaticTilemapLayer } from './types/world';
 import { RectangleToRectangle, CircleToRectangle } from '../helpers/math';
 import EngineState from '../EngineState';
 import { GameEvent, EventType } from './types/events';
+import playerTypes from './playerTypes';
+import aiTypes from './aiTypes';
 
 export default class World {
 	collisionLayer: StaticTilemapLayer;
@@ -24,6 +27,24 @@ export default class World {
 			EventType.ENGINE_TICK,
 			this.checkCollisionForObjects.bind(this),
 		);
+		EngineState.eventBus.listen(EventType.NETWORK_GAME_OBJECT_DELETED, (event: GameEvent) => {
+			this.removeGameObject(event.payload.name);
+		});
+		EngineState.eventBus.listen(EventType.ENGINE_SPAWN_PERSON, (event: GameEvent) => {
+			let person;
+			if (event.payload.entityType === EntityType.PLAYER) {
+				person = playerTypes[event.payload.playerType](event.payload);
+			} else if (event.payload.entityType === EntityType.AI) {
+				person = aiTypes[event.payload.aiType](event.payload);
+			} else {
+				console.warn(
+					'[ENGINE_SPAWN_PERSON] Tried to spawn person with unexpected entityType',
+					event.payload,
+				);
+			}
+
+			EngineState.world.addGameObject(person);
+		});
 	}
 
 	setTilemapLayers(collisionLayer: StaticTilemapLayer) {
@@ -32,6 +53,7 @@ export default class World {
 
 	addGameObject(obj: GameObject) {
 		this.gameObjects[obj.name] = obj;
+		console.log('dispatched game obj added for', obj.name);
 		EngineState.eventBus.dispatch(
 			new GameEvent(EventType.ENGINE_GAME_OBJECT_ADDED, {
 				name: obj.name,
@@ -39,6 +61,17 @@ export default class World {
 				x: obj.x,
 				y: obj.y,
 				sprite: obj.sprite,
+			}),
+		);
+	}
+
+	removeGameObject(name: string) {
+		if (!this.gameObjects[name]) return;
+
+		delete this.gameObjects[name];
+		EngineState.eventBus.dispatch(
+			new GameEvent(EventType.ENGINE_GAME_OBJECT_DELETED, {
+				name: name,
 			}),
 		);
 	}

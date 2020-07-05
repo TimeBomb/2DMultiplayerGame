@@ -29,6 +29,7 @@ export default class Player extends Person {
 		EngineState.eventBus.listen(
 			EventType.ENGINE_UPDATE_PERSON_ACTIONS,
 			this.updateActions.bind(this),
+			this.name,
 		);
 	}
 

@@ -3,6 +3,9 @@ import EngineState from '../EngineState';
 import ClientState from './ClientState';
 import Player from '../common/entities/base/player';
 
+const WORLD_SIZE = 3200;
+const CAMERA_PIXELS_IN_VIEW = 1500;
+
 export default class PhaserGame {
 	gameInstance: Phaser.Game;
 	player: Player;
@@ -26,11 +29,11 @@ export default class PhaserGame {
 		const gameConfig = {
 			type: Phaser.CANVAS,
 			parent: 'game',
-			width: 3200,
-			height: 3200,
+			width: WORLD_SIZE,
+			height: WORLD_SIZE,
 			roundPixels: true,
 			scale: {
-				mode: Phaser.Scale.RESIZE,
+				mode: Phaser.Scale.FIT,
 			},
 			scene: {
 				preload: rebind(this.preload),
@@ -68,10 +71,10 @@ export default class PhaserGame {
 		ClientState.personRenderer.initialize(scene);
 		ClientState.projectileRenderer.initialize(scene);
 		ClientState.player.initializeScene(scene);
-		ClientState.player.initializePlayer();
+		ClientState.player.loadPlayer();
 
 		// Initialize camera
-		scene.cameras.main.zoom = 0.6;
+		scene.cameras.main.zoom = WORLD_SIZE / CAMERA_PIXELS_IN_VIEW;
 	}
 
 	update(scene: Phaser.Scene) {

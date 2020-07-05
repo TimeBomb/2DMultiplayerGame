@@ -22,8 +22,7 @@
 		"tsify": "^4.0.1",
 		"uWebSockets.js": "github:uNetworking/uWebSockets.js#v17.3.0",
 		"uid": "^1.0.0",
-		"uuid": "^8.1.0",
-		"ws": "^7.2.5"
+		"uuid": "^8.1.0"
 	},
 	"scripts": {
 		"build": "ts-node --project ./packages/engine/src/client/tsconfig.json ./packages/client/build.ts",

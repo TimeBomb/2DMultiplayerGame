@@ -23,6 +23,7 @@ export enum EventType {
 	// Game events
 	ENGINE_PERSON_DEAD = 'engine/person_dead', // This is run by Person after they die
 	ENGINE_GAME_OBJECT_ADDED = 'engine/game_object_added', // This is run by World after addGameObject is executed
+	ENGINE_GAME_OBJECT_DELETED = 'engine/game_object_deleted', // This is run by World when something removes a game object from it, e.g. on player logout
 	ENGINE_SPAWN_PERSON = 'engine/person_spawn', // Run by engine when someone is spawned or respawned
 	ENGINE_UPDATE_PERSON = 'engine/update_person', // This is run by Person after status changes
 	ENGINE_UPDATE_PERSON_POSITION = 'engine/update_person_position', // This is run by Person whenever position/rotation is updated
@@ -39,9 +40,10 @@ export enum EventType {
 
 	// Networking events
 	NETWORK_PERSON_DEAD = 'network/person_dead', // Triggered by server engine and sent to client on person death
-	NETWORK_SPAWN_PERSON = ' network/person_spawn', // Triggered by server engine and sent to client on person initial spawn & respawn
+	NETWORK_SPAWN_PERSON = 'network/person_spawn', // Triggered by server engine and sent to client on person initial spawn & respawn
 	NETWORK_TICK = 'network/tick', // This triggers us to send events to the server
 	NETWORK_LOGIN = 'network/login', // This is passed by the client to the server when a user starts the game up on their end
+	NETWORK_GAME_OBJECT_DELETED = 'network/game_object_deleted', // This is passed by server to client when a game object has been deleted
 	NETWORK_UPDATE_PERSON_ACTIONS = 'network/update_person_actions', // Passed when sending person button presses over network
 	NETWORK_UPDATE_PERSON = 'network/update_person', // This is passed by the client -> server and serevr -> client every network tick, containing data on what buttons persons are pressing
 	NETWORK_UPDATE_PERSON_POSITION = 'network/update_person_position', // This is passed by server to send explicit position updates

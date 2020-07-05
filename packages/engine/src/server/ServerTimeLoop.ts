@@ -1,9 +1,11 @@
 import EngineState from '../EngineState';
 
 export default class ServerTimeLoop {
-	lastUpdate: number = Date.now();
+	lastUpdate: number;
+
 	constructor() {
-		setInterval(this.tick, EngineState.timeStep.frameTimeMS);
+		this.lastUpdate = Date.now();
+		setInterval(this.tick.bind(this), EngineState.timeStep.frameTimeMS);
 	}
 
 	tick() {

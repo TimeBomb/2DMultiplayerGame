@@ -1,4 +1,4 @@
-import WebSocket from 'ws';
+import uWS from 'uWebSockets.js';
 import http from 'http';
 import express, { Express } from 'express';
 import bodyParser from 'body-parser';

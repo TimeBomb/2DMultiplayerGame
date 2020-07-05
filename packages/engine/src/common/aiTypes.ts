@@ -10,7 +10,7 @@ type AIProps = {
 	x: number;
 	y: number;
 	health?: number;
-	movementDirections?: Set<Directions>;
+	movementDirections?: Directions[];
 	rotation?: number;
 };
 
@@ -20,8 +20,9 @@ export default {
 			coordinates: { x, y },
 			maxHealth: 1000,
 			health,
-			movementDirections: new Set(movementDirections || []),
+			movementDirections: movementDirections || [],
 			rotation,
+			sprite: 'player',
 		});
 	},
 };

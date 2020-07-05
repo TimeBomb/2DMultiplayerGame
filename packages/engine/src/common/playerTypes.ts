@@ -10,7 +10,7 @@ export default {
 		return new Player(PlayerType.Player, {
 			coordinates: { x: options.x, y: options.y }, // If x and y exist, we use that, but if coordinates, already set on `options`, we use that
 			...options,
-			movementDirections: new Set(options.movementDirections || []),
+			movementDirections: options.movementDirections || [],
 		});
 	},
 };

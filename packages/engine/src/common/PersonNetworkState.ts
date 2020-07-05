@@ -1,11 +1,9 @@
 import EngineState from '../EngineState';
-import { GameEvent, EventType, EventCategory } from '../common/types/events';
+import { GameEvent, EventType, EventCategory } from './types/events';
 import { Directions } from '../helpers/constants';
 
 // This class controls which keys are currently pressed/not pressed,
 // ideally sent to the server every network tick
-// TODO: Either split this class into two or make this class accept an entity name,
-// 		so server engine can use this on all persons
 export default class PersonNetworkState {
 	// Variables set to 1 if pressed, 0 if not pressed
 	primaryActionPressed: 0 | 1 = 0;
@@ -16,11 +14,23 @@ export default class PersonNetworkState {
 	name = '';
 	mousePos = { x: 0, y: 0 };
 
-	constructor() {
-		EngineState.eventBus.listenAllEventsByCategory(
-			EventCategory.ACTION,
-			this.handleActionEvent.bind(this),
-		);
+	// Generally `name` should only be passed by the server because we need personnetworkstate of multiple entities
+	// On the client it's easier for us to run this without requiring a name,
+	// and it's safe because on the client, action events only come from the player
+	constructor(name?) {
+		if (name) {
+			EngineState.eventBus.listenAllEventsByCategory(
+				EventCategory.ACTION,
+				this.handleActionEvent.bind(this),
+				name,
+			);
+			this.name = name;
+		} else {
+			EngineState.eventBus.listenAllEventsByCategory(
+				EventCategory.ACTION,
+				this.handleActionEvent.bind(this),
+			);
+		}
 	}
 
 	handleActionEvent(event: GameEvent) {
@@ -51,7 +61,10 @@ export default class PersonNetworkState {
 				}
 				break;
 			case EventType.ACTION_MOUSE_MOVE:
-				this.mousePos = event.payload.coords;
+				this.mousePos = {
+					x: Math.round(event.payload.coords.x),
+					y: Math.round(event.payload.coords.y),
+				};
 				break;
 			case EventType.ACTION_STOP_MOVE:
 				this.movingUp = 0;
@@ -67,6 +80,8 @@ export default class PersonNetworkState {
 	// Returns null if eventToDiff is passed and matches the props in current state
 	// Otherwise returns normal PlayerEvent
 	toEvent(eventToDiff?: GameEvent): GameEvent {
+		if (!this.name) return;
+
 		const eventPayload: any = {};
 		// If arg not passed, set eventToDiff to an empty object, ensuring propsToDiff map below sets all props on `event`
 		if (!eventToDiff) eventToDiff = { payload: {} } as any;

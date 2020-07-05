@@ -19,6 +19,7 @@ export default class GameEntitySpawnHandler {
 
 	initializeSpawns() {
 		spawns.forEach((spawn) => {
+			console.log('adding game obj for spawn', spawn);
 			EngineState.world.addGameObject(aiTypes[spawn.type](spawn.options));
 			EngineState.eventBus.dispatch(new GameEvent(EventType.ENGINE_SPAWN_PERSON, spawn));
 		});

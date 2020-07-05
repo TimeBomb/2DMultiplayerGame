@@ -18,16 +18,29 @@ export default class PlayerState {
 	phaserInstance: GameObjects.Sprite;
 	scene: Scene;
 	user: any;
+	spawns: any;
+	playerLoaded = false;
 
 	initializeScene(scene: Scene) {
 		this.scene = scene;
 	}
 
-	// TODO Finish spawn stuff here
-	initializeOnLogin(loginEvent: GameEvent) {
-		const spawns = loginEvent.payload.spawns;
+	async initializeOnLogin(loginEvent: GameEvent) {
+		this.spawns = loginEvent.payload.spawns;
 		this.user = loginEvent.payload.user;
-		spawns.forEach((spawn) => {
+		if (this.scene && !this.playerLoaded) this.loadPlayer();
+	}
+
+	// This is called by PhaserGame after scene is initd, and by initializeOnLogin when user is initd
+	// It requires user and scene to be initd, hence why it's called twice, but only executed once
+	loadPlayer() {
+		if (this.playerLoaded || !this.user) return;
+		this.playerLoaded = true;
+
+		const player = playerTypes[this.user.playerType](this.user);
+		EngineState.world.addGameObject(player);
+
+		this.spawns.forEach((spawn) => {
 			let gameObj;
 			switch (spawn.entityType) {
 				case EntityType.AI:
@@ -44,19 +57,6 @@ export default class PlayerState {
 				EngineState.world.addGameObject(gameObj);
 			}
 		});
-	}
-
-	async initializePlayer() {
-		return new Promise((resolve) => {
-			while (!this.user || !this.scene) {}
-			this.loadPlayer();
-			resolve(true);
-		});
-	}
-
-	loadPlayer() {
-		const player = playerTypes[this.user.playerType](this.user);
-		EngineState.world.addGameObject(player);
 
 		this.phaserInstance = ClientState.personRenderer.persons[player.name];
 

@@ -13,7 +13,6 @@ export type EngineProjectileProps = {
 	targetCoords: Coords;
 	attackerSize: { width: number; height: number };
 	born?: number;
-	doTick?: boolean;
 	name?: string;
 };
 type ProjectileTypeProps = {
@@ -51,7 +50,6 @@ export default class Projectile {
 	attackerSize: { width: number; height: number };
 	targetCoords: Coords;
 	sprite: string;
-	doTick = true;
 	projectileType: ProjectileType;
 
 	constructor(
@@ -64,7 +62,6 @@ export default class Projectile {
 			attackerCoords,
 			targetCoords,
 			attackerSize,
-			doTick,
 			width,
 			height,
 			xSpeed,
@@ -90,9 +87,8 @@ export default class Projectile {
 		this.bulletLifetime = bulletLifetime;
 		this.damage = damage;
 		this.sprite = sprite;
-		if (typeof this.born !== 'undefined') this.born = born;
 
-		if (typeof doTick !== 'undefined') this.doTick = doTick;
+		if (typeof this.born !== 'undefined') this.born = born;
 
 		EngineState.eventBus.listen(EventType.ENGINE_TICK, this.tick.bind(this));
 	}
@@ -127,7 +123,7 @@ export default class Projectile {
 	}
 
 	tick() {
-		if (!this.active || !this.doTick) return;
+		if (!this.active) return;
 
 		const originalX = this.x;
 		const originalY = this.y;

@@ -3,6 +3,7 @@ import { EventType, GameEvent, EventCategory, getEventCategory } from './common/
 export default class EventBus {
 	listeners = {};
 	eventTypeListeners = {};
+	eventTypeListenersForName = {};
 
 	// If name is passed, only listens to events coming attached to the specified name
 	listen(eventType: EventType, callback: (payload?: any) => void, name?: string) {
@@ -16,15 +17,38 @@ export default class EventBus {
 		}
 	}
 
-	listenAllEventsByCategory(category: EventCategory, callback: (event: GameEvent) => void) {
-		this.eventTypeListeners[category] = this.eventTypeListeners[category] || [];
-		this.eventTypeListeners[category].push(callback);
+	listenAllEventsByCategory(
+		category: EventCategory,
+		callback: (event: GameEvent) => void,
+		name?: string,
+	) {
+		if (name) {
+			this.eventTypeListenersForName[category] =
+				this.eventTypeListenersForName[category] || {};
+			this.eventTypeListenersForName[category][name] =
+				this.eventTypeListenersForName[category][name] || [];
+
+			this.eventTypeListenersForName[category][name].push(callback);
+		} else {
+			this.eventTypeListeners[category] = this.eventTypeListeners[category] || [];
+			this.eventTypeListeners[category].push(callback);
+		}
 	}
 
 	dispatch(event: GameEvent) {
 		const eventCategory = getEventCategory(event.type);
+
 		if (Array.isArray(this.eventTypeListeners[eventCategory])) {
 			this.eventTypeListeners[eventCategory].forEach((callback) => callback(event));
+		}
+
+		if (this.eventTypeListenersForName[eventCategory]) {
+			const eventListenersForName = this.eventTypeListenersForName[eventCategory][
+				event.payload?.name
+			];
+			if (eventListenersForName) {
+				eventListenersForName.forEach((callback) => callback(event));
+			}
 		}
 
 		if (this.listeners[event.type]) {

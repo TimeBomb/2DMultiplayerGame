@@ -27,7 +27,7 @@ export interface GameObject {
 	aiType?: AIType;
 	projectileType?: ProjectileType;
 	playerType?: PlayerType;
-	movementDirections?: Set<Directions>;
+	movementDirections?: Directions[];
 	born?: number;
 	rotation?: number;
 	getBounds: () => Bounds;

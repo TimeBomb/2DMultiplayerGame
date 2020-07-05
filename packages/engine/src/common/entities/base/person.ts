@@ -6,6 +6,8 @@ import EngineState from '../../../EngineState';
 import { GameEvent, EventType } from '../../types/events';
 import Projectile from './projectile';
 import { nanoid } from 'nanoid';
+import { EngineType } from '../../types/engine';
+import PersonNetworkState from '../../PersonNetworkState';
 
 export type PersonProps = {
 	coordinates: Coords;
@@ -14,7 +16,7 @@ export type PersonProps = {
 	health?: number;
 	name?: string;
 	sprite?: string;
-	movementDirections?: Set<Directions>;
+	movementDirections?: Directions[];
 	rotation?: number;
 };
 
@@ -26,7 +28,7 @@ export default abstract class Person {
 	y = 0;
 	abstract height: number;
 	abstract width: number;
-	movementDirections: Set<Directions> = new Set();
+	movementDirections: Directions[] = [];
 	respawnTime = 3000;
 	abstract movementSpeed: number;
 	health = 0;
@@ -39,7 +41,7 @@ export default abstract class Person {
 	abstract faction: Faction;
 	active = true;
 	abstract entityType: EntityType;
-
+	PersonNetworkState: PersonNetworkState;
 	type = 'Sprite';
 	attackAccumulator = 1;
 	doTick = true;
@@ -65,6 +67,8 @@ export default abstract class Person {
 		if (typeof rotation !== 'undefined') this.rotation = rotation;
 		if (typeof health !== 'undefined') this.health = health;
 		this.name = name || nanoid();
+
+		console.log('person constructed', name, this.name);
 
 		EngineState.eventBus.listen(EventType.ENGINE_TICK, this.tick.bind(this));
 		EngineState.eventBus.listen(
@@ -137,19 +141,28 @@ export default abstract class Person {
 	toggleMovementDirection(direction: Directions, toggleOn: boolean) {
 		if (this.isDead) return;
 
-		if (toggleOn) {
-			this.movementDirections.add(direction);
-		} else {
-			this.movementDirections.delete(direction);
+		if (toggleOn && !this.movementDirections.includes(direction)) {
+			this.movementDirections.push(direction);
+		} else if (!toggleOn && this.movementDirections.includes(direction)) {
+			const directionIndex = this.movementDirections.indexOf(direction);
+			if (directionIndex !== -1) {
+				this.movementDirections.splice(directionIndex, 1);
+			}
 		}
 	}
 
 	stopMovement() {
-		this.movementDirections.clear();
+		this.movementDirections = [];
 	}
 
 	tick() {
 		if (!this.active || this.isDead || !this.doTick) return;
+
+		if (this.health <= 0 && EngineState.engineType === EngineType.SERVER) {
+			this.health = 0;
+			this.onDead();
+			return;
+		}
 
 		const originalX = this.x;
 		const originalY = this.y;
@@ -158,7 +171,7 @@ export default abstract class Person {
 		let yDiff = 0;
 
 		// Move person
-		if (this.movementDirections.size > 0) {
+		if (this.movementDirections.length > 0) {
 			const movementAmount = Math.floor(
 				(this.movementSpeed * EngineState.timeStep.frameTimeMS) / 100,
 			);
@@ -229,16 +242,16 @@ export default abstract class Person {
 		if (movementAmount === 0) return;
 
 		// Movement speed is slowed while moving diagonally
-		if (this.movementDirections.size > 1) {
+		if (this.movementDirections.length > 1) {
 			movementAmount = Math.round(movementAmount * 0.75);
 		}
 
 		let xDiff = initialXDiff;
 		let yDiff = initialYDiff;
-		if (this.movementDirections.has(Directions.Forward)) yDiff -= movementAmount;
-		if (this.movementDirections.has(Directions.Backward)) yDiff += movementAmount;
-		if (this.movementDirections.has(Directions.Left)) xDiff -= movementAmount;
-		if (this.movementDirections.has(Directions.Right)) xDiff += movementAmount;
+		if (this.movementDirections.includes(Directions.Forward)) yDiff -= movementAmount;
+		if (this.movementDirections.includes(Directions.Backward)) yDiff += movementAmount;
+		if (this.movementDirections.includes(Directions.Left)) xDiff -= movementAmount;
+		if (this.movementDirections.includes(Directions.Right)) xDiff += movementAmount;
 
 		if (this.hasWorldCollision(this.x + xDiff, this.y)) {
 			xDiff = initialXDiff;
@@ -317,17 +330,12 @@ export default abstract class Person {
 			obj.faction !== this.faction
 		) {
 			this.health -= obj.damage;
-			if (this.health <= 0) {
-				this.health = 0;
-				this.onDead();
-			} else {
-				EngineState.eventBus.dispatch(
-					new GameEvent(EventType.ENGINE_UPDATE_PERSON, {
-						name: this.name,
-						health: this.health,
-					}),
-				);
-			}
+			EngineState.eventBus.dispatch(
+				new GameEvent(EventType.ENGINE_UPDATE_PERSON, {
+					name: this.name,
+					health: this.health,
+				}),
+			);
 		}
 	}
 
@@ -374,7 +382,7 @@ export default abstract class Person {
 	}
 
 	onStopMovement() {
-		this.movementDirections.clear();
+		this.movementDirections = [];
 	}
 
 	onPointerMove(coords: Coords) {
@@ -395,6 +403,7 @@ export default abstract class Person {
 	}
 
 	handleMouseDown() {
+		this.onMouseDown();
 		EngineState.eventBus.dispatch(
 			new GameEvent(EventType.ACTION_PRIMARY_DOWN, { name: this.name }),
 		);
@@ -423,6 +432,11 @@ export default abstract class Person {
 
 	// Updates actions in response to server message
 	updateActions(event: GameEvent) {
+		console.log(
+			'handling updateactions [likely network event came to server to update player actions]',
+			event,
+			this.name,
+		);
 		if (event.payload.name !== this.name) return;
 
 		const {

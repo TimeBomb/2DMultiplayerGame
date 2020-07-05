@@ -1,10 +1,11 @@
 import { GameEvent, EventType } from '../common/types/events';
 import { serialize, deserialize } from '../helpers/serializer';
 import EngineState from '../EngineState';
-import PersonNetworkState from './PersonNetworkState';
+import PersonNetworkState from '../common/PersonNetworkState';
 import ClientState from './ClientState';
 
-// TODO: Send Ping/pong events to/from server/client, disconnect if nothing received, also acts as keep alive
+// TODO: If client reconnects to server, we need a way to relogin the user or something like that
+// TODO: We're still attempting to send messages to closed websocket for some reason, it shouldnt be doing that
 const URL = 'ws://localhost:8123';
 export default class ClientSocketHandler {
 	ws: WebSocket;
@@ -22,8 +23,8 @@ export default class ClientSocketHandler {
 
 	constructor() {
 		this.connect();
-
 		this.PersonNetworkState = new PersonNetworkState();
+
 		EngineState.eventBus.listen(EventType.NETWORK_TICK, this.sendMessages.bind(this));
 		EngineState.eventBus.listen(EventType.ENGINE_TICK, this.handlePlayerEvent.bind(this));
 	}
@@ -85,6 +86,8 @@ export default class ClientSocketHandler {
 
 	// Every tick, grab changes in player network state and update event to send
 	handlePlayerEvent(event: GameEvent) {
+		if (!this.PersonNetworkState) return;
+
 		const playerEvent = this.PersonNetworkState.toEvent(this.lastPlayerNetworkEvent);
 		if (playerEvent) {
 			// Combine the last network event and this one, so we can
@@ -107,6 +110,10 @@ export default class ClientSocketHandler {
 		}
 
 		this.ws.send(serialize([...this.storedEvents, this.latestUnsentPlayerNetworkEvent]));
+		console.log('sending events to server', [
+			...this.storedEvents,
+			this.latestUnsentPlayerNetworkEvent,
+		]);
 		this.storedEvents.length = 0;
 		delete this.latestUnsentPlayerNetworkEvent;
 	}
